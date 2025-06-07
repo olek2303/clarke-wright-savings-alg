@@ -1,0 +1,12 @@
+.vs/
+.vscode/
+.idea/
+out/
+build
+*.out
+*.o
+*.a
+visualization*.*
+*.bak
+docs/
+!assets/visualization.svg
