@@ -9,7 +9,7 @@
 
 int main()
 {
-	std::vector<Point> vertices = generateUniquePoints(15);
+	std::vector<Point> vertices = generateUniquePoints(50);
     std::vector<Edge> edges;
     int n = vertices.size();
     for (int i = 0; i < n; ++i)

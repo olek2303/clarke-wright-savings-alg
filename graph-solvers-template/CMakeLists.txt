@@ -8,6 +8,7 @@ add_executable (graph-solvers-template
     "src/common/types.cpp"
     "src/geometry/visualization.cpp"
     "src/model/solver.cpp"
+    "src/model/clarke_wright.cpp"
 )
 
 target_include_directories(graph-solvers-template PRIVATE

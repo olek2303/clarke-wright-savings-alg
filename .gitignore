@@ -10,3 +10,5 @@ visualization*.*
 *.bak
 docs/
 !assets/visualization.svg
+cmake-build-debug
+cmake-build-clarke-wright
