@@ -1,7 +1,5 @@
 #pragma once
 
-#pragma once
-
 #include <vector>
 #include <utility>
 
@@ -17,4 +15,4 @@
  * @return std::vector<std::pair<int, int>>
  *         A list of pairs (u, v) representing the edges selected by the algorithm.
  */
-std::vector<std::pair<int, int>> solveProblem(const std::vector<Point>& vertices, const std::vector<Edge>& edges);
+std::vector<std::vector<std::pair<int, int>>> solveProblem(const std::vector<Point>& vertices, const std::vector<Edge>& edges, int n_of_roads = 1);
