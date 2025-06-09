@@ -10,168 +10,64 @@
 #include <cmath>
 #include <stdexcept>
 #include <thread>
+#include "model/clark_wright_alg.h"
+#include <queue>
 
-struct CustomerNode {
-    int id;
-    double demand;
-};
+void dijkstra(int source, const std::vector<std::vector<std::pair<int, double>>>& adj,
+    std::vector<double>& dist, std::vector<int>& parent) {
+    int n = (int)adj.size();
+    dist.assign(n, std::numeric_limits<double>::infinity());
+    parent.assign(n, -1);
+    dist[source] = 0.0;
 
-struct Route {
-    std::vector<int> point_indices;
-    double total_distance;
-    Route() : total_distance(0) {}
-};
+    using PD = std::pair<double, int>;
+    std::priority_queue<PD, std::vector<PD>, std::greater<PD>> pq;
+    pq.emplace(0.0, source);
 
-struct DirectedSaving {
-    int from_idx;
-    int to_idx;
-    double value;
-    bool operator<(const DirectedSaving& other) const { return value > other.value; }
-};
+    while (!pq.empty()) {
+        auto [curr_dist, u] = pq.top();
+        pq.pop();
+        if (curr_dist > dist[u]) continue;
 
-double calculate_route_distance_separate_depots(
-    const Route& route,
-    int start_depot_idx,
-    int end_depot_idx,
-    const std::vector<std::vector<double>>& dist_matrix) {
-
-    if (route.point_indices.empty()) return 0.0;
-    double distance = 0.0;
-    distance += dist_matrix[start_depot_idx][route.point_indices.front()];
-    for (size_t i = 0; i < route.point_indices.size() - 1; ++i) {
-        distance += dist_matrix[route.point_indices[i]][route.point_indices[i + 1]];
-    }
-    distance += dist_matrix[route.point_indices.back()][end_depot_idx];
-    return distance;
-}
-
-std::vector<Route> clarke_wright_separate_depots(
-    int start_depot_idx,
-    int end_depot_idx,
-    const std::vector<CustomerNode>& nodes,
-    const std::vector<std::vector<double>>& dist_matrix,
-    std::vector<DirectedSaving>& savings_list) {
-
-    if (nodes.empty()) return {};
-
-    std::vector<Route> current_routes;
-    for (const auto& customer : nodes) {
-        Route initial_route;
-        initial_route.point_indices.push_back(customer.id);
-        current_routes.push_back(initial_route);
-    }
-
-    std::sort(savings_list.begin(), savings_list.end());
-
-    for (const auto& saving : savings_list) {
-        int from_idx = saving.from_idx;
-        int to_idx = saving.to_idx;
-
-        int route1_idx = -1;
-        int route2_idx = -1;
-
-        for (size_t i = 0; i < current_routes.size(); ++i) {
-            const auto& pts = current_routes[i].point_indices;
-            if (pts.empty()) continue;
-            if (pts.back() == from_idx) route1_idx = static_cast<int>(i);
-            if (pts.front() == to_idx) route2_idx = static_cast<int>(i);
-        }
-
-        if (route1_idx != -1 && route2_idx != -1 && route1_idx != route2_idx) {
-            auto& r1 = current_routes[route1_idx];
-            auto& r2 = current_routes[route2_idx];
-
-            bool has_overlap = false;
-            for (int pid : r2.point_indices) {
-                if (std::find(r1.point_indices.begin(), r1.point_indices.end(), pid) != r1.point_indices.end()) {
-                    has_overlap = true;
-                    break;
-                }
-            }
-
-            if (!has_overlap) {
-                r1.point_indices.insert(
-                    r1.point_indices.end(),
-                    r2.point_indices.begin(),
-                    r2.point_indices.end()
-                );
-                r2.point_indices.clear();
+        for (const auto& [v, cost] : adj[u]) {
+            double nd = curr_dist + cost;
+            if (nd < dist[v]) {
+                dist[v] = nd;
+                parent[v] = u;
+                pq.emplace(nd, v);
             }
         }
     }
-
-    std::vector<Route> final_routes;
-    for (const auto& route : current_routes) {
-        if (!route.point_indices.empty()) {
-            Route final_route = route;
-            final_route.total_distance = calculate_route_distance_separate_depots(
-                route, start_depot_idx, end_depot_idx, dist_matrix);
-            final_routes.push_back(final_route);
-        }
-    }
-
-    return final_routes;
 }
 
-std::vector<Route> generate_routes_with_variants(
-    int start_depot_idx,
-    int end_depot_idx,
-    const std::vector<CustomerNode>& nodes,
-    const std::vector<std::vector<double>>& dist_matrix,
-    int num_variants = 3) {
-
-    std::vector<Route> all_valid_routes;
-
-    std::vector<DirectedSaving> base_savings;
-    for (const auto& cust_i : nodes) {
-        for (const auto& cust_j : nodes) {
-            if (cust_i.id == cust_j.id) continue;
-            double saving_value =
-                dist_matrix[cust_i.id][end_depot_idx] +
-                dist_matrix[start_depot_idx][cust_j.id] -
-                dist_matrix[cust_i.id][cust_j.id];
-            if (saving_value > 0) {
-                base_savings.push_back({ cust_i.id, cust_j.id, saving_value });
-            }
-        }
+std::vector<int> reconstruct_path(int from, int to, const std::vector<std::vector<int>>& parent_matrix) {
+    std::vector<int> path;
+    if (parent_matrix[from][to] == -1 && from != to) {
+        return {};
     }
-
-    std::sort(base_savings.begin(), base_savings.end());
-
-    int seed = 42;
-    for (int k = 0; k < num_variants; ++k) {
-        std::vector<DirectedSaving> savings_variant = base_savings;
-        std::shuffle(savings_variant.begin(), savings_variant.end(), std::default_random_engine(seed + k));
-
-        std::vector<Route> routes_variant = clarke_wright_separate_depots(
-            start_depot_idx, end_depot_idx, nodes, dist_matrix, savings_variant);
-
-        if (!routes_variant.empty()) {
-            all_valid_routes.push_back(routes_variant[0]);
-        }
-
-        std::sort(all_valid_routes.begin(), all_valid_routes.end(),
-            [](const Route& a, const Route& b) {
-                return a.point_indices.size() > b.point_indices.size();
-            });
-
-        if ((int)all_valid_routes.size() >= num_variants)
-            break;
+    int current = to;
+    while (current != from) {
+        path.push_back(current);
+        current = parent_matrix[from][current];
+        if (current == -1) return {};
     }
-
-    return all_valid_routes;
+    path.push_back(from);
+    std::reverse(path.begin(), path.end());
+    return path;
 }
 
-std::vector<std::pair<int, int>> solveProblem(const std::vector<Point>& vertices, const std::vector<Edge>& edges)
+
+std::vector<std::vector<std::pair<int, int>>> solveProblem(const std::vector<Point>& vertices, const std::vector<Edge>& edges, int n_of_roads)
 {
     std::cout << "Solving with Clarke-Wright based heuristic...\n";
-    std::vector<std::pair<int, int>> output_edges;
+    std::vector<std::vector<std::pair<int, int>>> all_output_edges;
+
     IloEnv env;
 
     try {
         int num_points = static_cast<int>(vertices.size());
         if (num_points < 3) {
-            std::cerr << "Za ma³o punktów (min. 3: start, przynajmniej 1 klient, meta).\n";
+            std::cerr << "You need to have at least 3 points!.\n";
             return {};
         }
 
@@ -179,10 +75,25 @@ std::vector<std::pair<int, int>> solveProblem(const std::vector<Point>& vertices
         const int end_depot_idx = num_points - 1;
         const int num_waypoints = num_points - 2;
 
-        std::vector<std::vector<double>> dist_matrix(num_points, std::vector<double>(num_points, std::numeric_limits<double>::infinity()));
+        std::cout << "Start depot idx: " << start_depot_idx << "\n";
+        std::cout << "End depot idx: " << end_depot_idx << "\n";
+        std::cout << "Number of waypoints: " << num_waypoints << "\n";
+
+        std::vector<std::vector<std::pair<int, double>>> adj(num_points);
         for (const auto& edge : edges) {
-            dist_matrix[edge.u][edge.v] = edge.cost;
-            dist_matrix[edge.v][edge.u] = edge.cost;
+            adj[edge.u].emplace_back(edge.v, edge.cost);
+            adj[edge.v].emplace_back(edge.u, edge.cost);
+        }
+
+        std::vector<std::vector<double>> dist_matrix(num_points, std::vector<double>(num_points, std::numeric_limits<double>::infinity()));
+        std::vector<std::vector<int>> parent_matrix(num_points, std::vector<int>(num_points, -1));
+
+        for (int i = 0; i < num_points; ++i) {
+            std::vector<double> dist;
+            std::vector<int> parent;
+            dijkstra(i, adj, dist, parent);
+            dist_matrix[i] = dist;
+            parent_matrix[i] = parent;
         }
 
         std::vector<CustomerNode> nodes;
@@ -191,26 +102,65 @@ std::vector<std::pair<int, int>> solveProblem(const std::vector<Point>& vertices
         }
 
         std::vector<Route> routes = generate_routes_with_variants(
-            start_depot_idx, end_depot_idx, nodes, dist_matrix, 10);  // próbujemy wiêcej wariantów
+            start_depot_idx, end_depot_idx, nodes, dist_matrix, num_waypoints * 10);
 
         if (routes.empty()) {
-            std::cerr << "Nie wygenerowano ¿adnej trasy.\n";
+            std::cerr << "No routes found!.\n";
             return {};
         }
 
-        // Wybieramy trasê odwiedzaj¹c¹ najwiêcej punktów
-        const auto& best_route = *std::max_element(
-            routes.begin(), routes.end(),
+
+        std::vector<Route> sorted_routes = routes;
+        std::sort(sorted_routes.begin(), sorted_routes.end(),
             [](const Route& a, const Route& b) {
-                return a.point_indices.size() < b.point_indices.size();
+                if (a.point_indices.size() != b.point_indices.size()) {
+                    return a.point_indices.size() > b.point_indices.size(); 
+                }
+                else {
+                    return a.total_distance < b.total_distance; 
+                }
             });
 
-        if (!best_route.point_indices.empty()) {
-            output_edges.emplace_back(start_depot_idx, best_route.point_indices.front());
-            for (size_t i = 0; i + 1 < best_route.point_indices.size(); ++i) {
-                output_edges.emplace_back(best_route.point_indices[i], best_route.point_indices[i + 1]);
+    
+        int top_k = n_of_roads;
+        int count = std::min(top_k, (int)sorted_routes.size());
+
+        for (int i = 0; i < count; ++i) {
+            const Route& best_route = sorted_routes[i];
+            std::vector<std::pair<int, int>> output_edges; 
+
+            if (!best_route.point_indices.empty()) {
+                std::cout << "Best route #" << (i + 1) << ": " << start_depot_idx;
+                for (int curr : best_route.point_indices) {
+                    std::cout << " -> " << curr;
+                }
+                std::cout << " -> " << end_depot_idx << "\n";
+                std::cout << "Total distance of best route #" << (i + 1) << ": " << best_route.total_distance << "\n";
+
+                int prev = start_depot_idx;
+
+                for (int curr : best_route.point_indices) {
+                    std::vector<int> path = reconstruct_path(prev, curr, parent_matrix);
+                    if (path.empty()) {
+                        std::cerr << "No path between: " << prev << " a " << curr << "\n";
+                        continue;
+                    }
+                    for (size_t j = 0; j + 1 < path.size(); ++j) {
+                        output_edges.emplace_back(path[j], path[j + 1]);
+                    }
+                    prev = curr;
+                }
+
+                std::vector<int> path = reconstruct_path(prev, end_depot_idx, parent_matrix);
+                if (path.empty()) {
+                    std::cerr << "No path between: " << prev << " a " << end_depot_idx << "\n";
+                }
+                for (size_t j = 0; j + 1 < path.size(); ++j) {
+                    output_edges.emplace_back(path[j], path[j + 1]);
+                }
+
+                all_output_edges.push_back(std::move(output_edges)); 
             }
-            output_edges.emplace_back(best_route.point_indices.back(), end_depot_idx);
         }
 
     }
@@ -225,5 +175,6 @@ std::vector<std::pair<int, int>> solveProblem(const std::vector<Point>& vertices
     }
 
     env.end();
-    return output_edges;
+    return all_output_edges;
 }
+

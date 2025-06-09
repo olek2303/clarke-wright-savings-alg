@@ -22,4 +22,9 @@
  * @param output_edges  A vector of edges (pairs of vertex indices) selected by the solver.
  * @param filename   The name of the SVG file to write (default: "visualization.svg").
  */
-void drawSVG(const std::vector<Point>& points, const std::vector<std::pair<int, int>>& output_edges, const std::string& filename = "visualization.svg");
+
+void drawSVG(const std::vector<Point>& points,
+    const std::vector<std::vector<std::pair<int, int>>>& all_routes_edges,
+    const std::vector<std::array<int, 3>>& triangles,
+    const std::string& filename = "visualization.svg");
+
