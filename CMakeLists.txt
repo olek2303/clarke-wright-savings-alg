@@ -66,12 +66,12 @@ if (POLICY CMP0141)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
-project ("graph-solvers-template")
+project ("clarke-wright-savings-alg")
 
 include(CTest)
 enable_testing()
 
 # Include sub-projects.
-add_subdirectory ("graph-solvers-template")
+add_subdirectory ("clarke-wright-savings-alg")
 
 set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1)
