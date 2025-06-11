@@ -13,7 +13,7 @@ double calculate_route_distance_separate_depots(
     for (size_t i = 0; i < route.point_indices.size(); ++i) {
         int to = route.point_indices[i];
         double d = dist_matrix[from][to];
-        if (std::isinf(d)) return std::numeric_limits<double>::infinity();  // trasa nieosi¹galna
+        if (std::isinf(d)) return std::numeric_limits<double>::infinity();  // trasa nieosiÄ…galna
         distance += d;
         from = to;
     }

@@ -35,10 +35,12 @@ int main()
 
     std::vector<std::array<int, 3>> triangles;
     for (const auto& tri : cdt.triangles) {
-        std::array<int, 3> triangle = { tri.vertices[0], tri.vertices[1], tri.vertices[2] };
+        std::array<int, 3> triangle = {
+            static_cast<int>(tri.vertices[0]),
+            static_cast<int>(tri.vertices[1]),
+            static_cast<int>(tri.vertices[2])
+        };
         triangles.push_back(triangle);
-
-
     }
 
     auto outputEdges = solveProblem(vertices, edges, 3);

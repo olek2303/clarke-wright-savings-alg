@@ -14,7 +14,7 @@ void offset_line(double& x1, double& y1, double& x2, double& y2, double offset) 
     double dx = x2 - x1;
     double dy = y2 - y1;
     double len = std::sqrt(dx * dx + dy * dy);
-    if (len == 0) return;  
+    if (len == 0) return;
 
     double nx = -dy / len;
     double ny = dx / len;
@@ -66,7 +66,7 @@ void drawSVG(const std::vector<Point>& points,
     }
     svg << "</g>\n";
 
-   
+
     std::map<std::pair<int, int>, std::vector<size_t>> edge_to_routes;
     for (size_t route_idx = 0; route_idx < all_routes_edges.size(); ++route_idx) {
         for (const auto& e : all_routes_edges[route_idx]) {
@@ -87,15 +87,15 @@ void drawSVG(const std::vector<Point>& points,
         double y2 = transformY(points[b].y);
 
         int n = (int)routes.size();
-  
+
         for (int i = 0; i < n; ++i) {
             double offset = 0;
             if (n % 2 == 1) {
-              
+
                 offset = (i - n / 2) * offset_step;
             }
             else {
-                
+
                 offset = (i - n / 2 + 0.5) * offset_step;
             }
 
