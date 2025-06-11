@@ -6,7 +6,8 @@ build
 *.out
 *.o
 *.a
-visualization*.*
 *.bak
 docs/
-!assets/visualization.svg
+*.svg
+!assets/graph_clear.svg
+!assets/graph_with_route.svg
