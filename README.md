@@ -1,8 +1,8 @@
-# Graph Solvers Template
+# Clarke Wright Savings Algorithm
 
-[![CodeQL](https://github.com/milosz275/graph-solvers-template/actions/workflows/codeql.yml/badge.svg)](https://github.com/milosz275/graph-solvers-template/actions/workflows/codeql.yml)
-[![Doxygen Pages](https://github.com/milosz275/graph-solvers-template/actions/workflows/doxygen-pages.yml/badge.svg)](https://github.com/milosz275/graph-solvers-template/actions/workflows/doxygen-pages.yml)
-[![License](https://img.shields.io/github/license/milosz275/graph-solvers-template)](/LICENSE)
+[![CodeQL](https://github.com/olek2303/clarke-wright-savings-alg/actions/workflows/codeql.yml/badge.svg)](https://github.com/olek2303/clarke-wright-savings-alg/actions/workflows/codeql.yml)
+[![Doxygen Pages](https://github.com/olek2303/clarke-wright-savings-alg/actions/workflows/doxygen-pages.yml/badge.svg)](https://github.com/olek2303/clarke-wright-savings-alg/actions/workflows/doxygen-pages.yml)
+[![License](https://img.shields.io/github/license/olek2303/clarke-wright-savings-alg)](/LICENSE)
 
 ![Logo](assets/logo.png)
 
@@ -13,7 +13,7 @@ Graph solvers template can be used to visualize your graph algorithm using CPLEX
 * [Overview](#overview)
 * [Implementation Details](#implementation-details)
 * [Usage](#usage)
-* [Testing](#testing)
+* [Results](#results)
 * [Documentation](#documentation)
 * [License](#license)
 
@@ -28,29 +28,23 @@ This project creates an entry point for implementing a solver for any graph prob
 * **Solver**: [IBM CPLEX](https://www.ibm.com/products/ilog-cplex-optimization-studio)
 * **LP Library**: CPLEX Concert Technology
 * **Visualization**: [CDT](https://github.com/artem-ogre/CDT)
-* **Testing**: GoogleTest
 * **Documentation**: Doxygen
 
 ## Usage
 
-To use this template click `Use this template` and create a new repository or open the template in a codespaces [or use this template here](https://github.com/new?template_name=graph-solvers-template&template_owner=milosz275).
+Make sure to clone the repository with submodules:
 
-Then make sure to initialize submodules:
+```powershell
+git clone --recursive https://github.com/olek2303/clarke-wright-savings-alg.git
+```
+
+If you've already cloned the repository without `--recursive`, run:
 
 ```powershell
 git submodule update --init --recursive
 ```
 
-Remember to clone your repo with recursive flag too:
-
-```powershell
-git clone --recursive https://github.com/your_username/your_repo_name.git
-```
-
 This ensures the `CDT` library is properly initialized.
-
-> [!IMPORTANT]
-> Remember is to replace `milosz275` with your username and `graph-solvers-template` with your repository name across all files.
 
 ### VSCode / Visual Studio 2022
 
@@ -65,28 +59,26 @@ Run the following commands to configure and build the project:
 ```powershell
 cmake --preset x64-release -DCPLEX_ROOT="C:/Program Files/IBM/ILOG/CPLEX_Studio2212"
 cmake --build --preset x64-release
-.\out\build\x64-release\graph-solvers-template\graph-solvers-template.exe
+.\out\build\x64-release\clarke-wright-savings-alg\clarke-wright-savings-alg.exe
 ```
 
-> Use Developer PowerShell to ensure `cl.exe` and `CPLEX` are in the environment.
+> Use Developer PowerShell to ensure `cl.exe` and `CPLEX` are in the environment
 
-## Testing
+## Results
 
-Implement your tests under `graph-solvers-template/tests` by following example scheme. IDEs should automatically detect them.
+First, clear graph is rendered:
 
-To run tests via CLI:
+![Clear graph example](assets/graph_clear.svg)
 
-```powershell
-ctest --preset x64-release
-```
+Then the solution is visualized as paths over the graph:
 
-Or run `test_*.exe` directly from the build folder.
+![Graph with rendered route example](assets/graph_with_route.svg)
 
 ## Documentation
 
 Documentation is auto-generated from docstring via Doxygen and hosted via GitHub Pages:
 
-[View documentation](https://milosz275.github.io/graph-solvers-template)
+[View documentation](https://olek2303.github.io/clarke-wright-savings-alg)
 
 To generate locally:
 
