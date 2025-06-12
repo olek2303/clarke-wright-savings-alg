@@ -6,20 +6,15 @@
 
 ![Logo](assets/logo.png)
 
-Graph solvers template can be used to visualize your graph algorithm using CPLEX on randomly created graph visualized along with the wanted output.
+This repository implements the Clarke-Wright Savings algorithm for a purpose of finding optimal routes through a random set of vertices in 2D space.
 
 ## Table of Contents
 
-* [Overview](#overview)
 * [Implementation Details](#implementation-details)
 * [Usage](#usage)
 * [Results](#results)
 * [Documentation](#documentation)
 * [License](#license)
-
-## Overview
-
-This project creates an entry point for implementing a solver for any graph problem using integer programming (IP). IBM CPLEX is connected as the solver backend using CMake. Results are visualized with CDT in SVG format, overlaying the algorithm results.
 
 ## Implementation Details
 
@@ -66,13 +61,31 @@ cmake --build --preset x64-release
 
 ## Results
 
-First, clear graph is rendered:
+The solver outputs best routes and plots them onto the original graph. For example:
 
-![Clear graph example](assets/graph_clear.svg)
+> Solving with Clarke-Wright based heuristic...
+Start depot idx: 0
+End depot idx: 49
+Number of waypoints: 48
+Best route #1: 0 -> 5 -> 3 -> 1 -> 2 -> 4 -> 10 -> 12 -> 15 -> 18 -> 21 -> 19 -> 23 -> 32 -> 34 -> 38 -> 47 -> 46 -> 41 -> 45 -> 8 -> 7 -> 6 -> 13 -> 17 -> 31 -> 35 -> 42 -> 29 -> 16 -> 25 -> 27 -> 33 -> 37 -> 14 -> 26 -> 30 -> 39 -> 40 -> 48 -> 49
+Total distance of best route #1: 285.222
+Best route #2: 0 -> 5 -> 3 -> 1 -> 2 -> 4 -> 10 -> 12 -> 15 -> 18 -> 21 -> 19 -> 23 -> 32 -> 34 -> 38 -> 47 -> 46 -> 41 -> 45 -> 8 -> 7 -> 6 -> 13 -> 17 -> 31 -> 35 -> 42 -> 29 -> 16 -> 25 -> 27 -> 33 -> 37 -> 14 -> 26 -> 30 -> 39 -> 40 -> 48 -> 49
+Total distance of best route #2: 285.222
+Best route #3: 0 -> 5 -> 3 -> 1 -> 2 -> 4 -> 10 -> 12 -> 15 -> 18 -> 21 -> 19 -> 23 -> 32 -> 34 -> 38 -> 47 -> 46 -> 41 -> 45 -> 8 -> 7 -> 6 -> 13 -> 17 -> 31 -> 35 -> 42 -> 29 -> 16 -> 25 -> 27 -> 33 -> 37 -> 14 -> 26 -> 30 -> 39 -> 40 -> 48 -> 49
+Total distance of best route #3: 285.222
+SVG visualization written to graph_with_route.svg
+SVG visualization written to graph_clear.svg
 
-Then the solution is visualized as paths over the graph:
-
-![Graph with rendered route example](assets/graph_with_route.svg)
+<div style="display: flex; gap: 32px; align-items: flex-start;">
+  <div>
+    <strong>Clear graph for reference:</strong><br>
+    <img src="assets/graph_clear.svg" alt="Clear graph example" width="350"/>
+  </div>
+  <div>
+    <strong>Graph with routes plotted:</strong><br>
+    <img src="assets/graph_with_route.svg" alt="Graph with rendered route example" width="350"/>
+  </div>
+</div>
 
 ## Documentation
 
