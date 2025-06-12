@@ -5,10 +5,9 @@
 #include "common/types.h"
 #include <CDT.h>
 
-int main()
+std::pair<std::vector<std::array<int, 3>>, std::vector<Edge>>
+computeTriangulationAndEdges(const std::vector<Point>& vertices)
 {
-    std::vector<Point> vertices = generateUniquePoints(50);
-
     std::vector<CDT::V2d<double>> cdt_points;
     for (const auto& p : vertices)
         cdt_points.emplace_back(p.x, p.y);
@@ -35,19 +34,36 @@ int main()
 
     std::vector<std::array<int, 3>> triangles;
     for (const auto& tri : cdt.triangles) {
-        std::array<int, 3> triangle = {
-            static_cast<int>(tri.vertices[0]),
-            static_cast<int>(tri.vertices[1]),
-            static_cast<int>(tri.vertices[2])
-        };
+        std::array<int, 3> triangle = { tri.vertices[0], tri.vertices[1], tri.vertices[2] };
         triangles.push_back(triangle);
     }
 
-    auto outputEdges = solve_clarke_savings(vertices, edges, 3);
-    std::vector<std::vector<std::pair<int, int>>> clearGraph;
-    drawSVG(vertices, outputEdges, triangles, "graph_with_route.svg");
-    drawSVG(vertices, clearGraph, triangles, "graph_clear.svg");
+    return { triangles, edges };
+}
 
+
+int main()
+{
+    std::vector<Point> vertices = generateUniquePoints(50);
+
+    auto [triangles, edges] = computeTriangulationAndEdges(vertices);
+
+    auto outputEdges = solveProblem(vertices, edges, 20);
+    std::vector<std::vector<std::pair<int, int>>> clearGraph;
+
+    // Pętla do rysowania każdej trasy w osobnym pliku
+    for (int i = 0; i < outputEdges.size(); ++i) {
+        // Stwórz dynamiczną nazwę pliku, np. "graph_with_route_0.svg", "graph_with_route_1.svg" itd.
+        std::string filename = "graph_with_route_" + std::to_string(i) + ".svg";
+
+        // Stwórz wektor zawierający tylko jedną, bieżącą trasę
+        // Zakładam, że drawSVG oczekuje formatu std::vector<std::vector<...>>
+        std::vector<std::vector<std::pair<int, int>>> singleRoute = { outputEdges[i] };
+
+        // Narysuj SVG dla pojedynczej trasy
+        drawSVG(vertices, singleRoute, triangles, filename);
+    }
+    drawSVG(vertices, clearGraph, triangles, "graph_clear.svg");
 
     return 0;
 }

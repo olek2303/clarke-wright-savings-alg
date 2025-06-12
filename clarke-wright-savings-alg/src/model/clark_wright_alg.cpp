@@ -13,7 +13,7 @@ double calculate_route_distance_separate_depots(
     for (size_t i = 0; i < route.point_indices.size(); ++i) {
         int to = route.point_indices[i];
         double d = dist_matrix[from][to];
-        if (std::isinf(d)) return std::numeric_limits<double>::infinity();  // trasa nieosiągalna
+        if (std::isinf(d)) return std::numeric_limits<double>::infinity();  // trasa nieosi�galna
         distance += d;
         from = to;
     }
@@ -41,7 +41,7 @@ std::vector<Route> clarke_wright_separate_depots(
         current_routes.push_back(initial_route);
     }
 
-    std::sort(savings_list.begin(), savings_list.end());
+//    std::sort(savings_list.begin(), savings_list.end());
 
     for (const auto& saving : savings_list) {
         int from_idx = saving.from_idx;

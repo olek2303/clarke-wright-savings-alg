@@ -1,0 +1,598 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage[utf8]{inputenc}
+\usepackage{float}
+\usepackage{subcaption} 
+\usepackage[T1]{fontenc}
+
+\usepackage{polski}
+
+\usepackage{amsmath} % Pakiet dla zaawansowanych wzorów matematycznych
+\usepackage{amssymb} % Pakiet dla dodatkowych symboli matematycznych
+\usepackage{geometry} % Opcjonalne - kontrola układu strony
+\geometry{a4paper, margin=1in}
+\usepackage{graphicx} % W razie potrzeby wstawiania grafiki
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    backgroundcolor=\color{gray!10},
+    frame=single,
+    keywordstyle=\color{blue},
+    commentstyle=\color{gray},
+    stringstyle=\color{red},
+    showstringspaces=false
+}
+
+
+\title{Coverage Path Planning for a UAS Imagery Mission}
+\author{Szymon Kietliński, Olek Karpiuk, Rafał Maciejewski, Miłosz Maculewicz}
+\date{Metody i narzędzia informatyczne w optymalizacji problemów biznesowych - Projekt}
+
+\begin{document}
+
+\maketitle
+\section{Wprowadzenie}
+
+Optymalizacja tras w transporcie i logistyce stanowi jedno z kluczowych zagadnień we współczesnych systemach dystrybucji. Dynamiczny rozwój handlu elektronicznego, rosnące oczekiwania klientów oraz potrzeba redukcji kosztów operacyjnych sprawiają, że efektywne planowanie tras dostaw staje się coraz bardziej istotne. Problem ten znajduje swoje odzwierciedlenie w klasycznym problemie trasowania pojazdów (VRP, ang. \textit{Vehicle Routing Problem}), który od lat stanowi obiekt zainteresowania zarówno środowiska akademickiego, jak i przemysłu.
+
+Niniejsze sprawozdanie dokumentuje prace nad implementacją rozwiązania problemu trasowania pojazdów przy użyciu podejścia heurystycznego. Opracowany program pozwala na analizę tras wyznaczanych na podstawie danych wejściowych w postaci macierzy odległości oraz umożliwia ich wizualizację. Przedstawione rozwiązanie koncentruje się na praktycznym podejściu do problemu, z uwzględnieniem ograniczeń logistycznych typowych dla rzeczywistych systemów dystrybucji.
+
+\section{Opis problemu}
+
+Problem trasowania pojazdów (VRP) polega na wyznaczeniu optymalnego zestawu tras dla floty pojazdów obsługujących zbiór klientów, przy czym każdy pojazd rozpoczyna i kończy trasę w magazynie (depozycie), a każdy klient musi zostać obsłużony dokładnie raz. Głównym celem jest najczęściej minimalizacja całkowitego kosztu, którym może być łączna długość tras, czas przejazdu, zużycie paliwa lub inne czynniki operacyjne.
+
+Klasyczny wariant problemu zakłada:
+\begin{itemize}
+  \item jeden centralny magazyn, z którego wyruszają pojazdy i do którego muszą powrócić,
+  \item określoną liczbę klientów o znanych lokalizacjach i zapotrzebowaniu,
+  \item ograniczenia związane z pojemnością pojazdów,
+  \item znaną macierz odległości pomiędzy punktami (magazynem i klientami),
+  \item brak możliwości dzielenia dostaw — każdy klient jest obsługiwany przez dokładnie jeden pojazd.
+\end{itemize}
+
+VRP należy do klasy problemów NP-trudnych, dlatego w praktyce powszechnie stosuje się metody przybliżone i heurystyczne, które pozwalają na szybkie uzyskanie rozwiązań dobrej jakości dla instancji o dużej liczności.
+\section{Rozwiązanie problemu}
+
+W celu efektywnego rozwiązania problemu trasowania pojazdów zdecydowano się na zastosowanie heurystycznego podejścia bazującego na klasycznym algorytmie oszczędnościowym, powszechnie znanym jako algorytm Clarke’a-Wrighta. Rozwiązanie to umożliwia szybkie uzyskanie tras o dobrej jakości przy niskim koszcie obliczeniowym, co czyni je praktycznym wyborem zarówno w zastosowaniach inżynierskich, jak i w badaniach operacyjnych.
+
+W prezentowanym rozwiązaniu algorytm Clarke’a-Wrighta pełni rolę narzędzia inicjalizującego — generuje on początkowy zbiór tras, które następnie mogą zostać poddane dalszej optymalizacji. Takie podejście zostało również zastosowane w pracy naukowej \textit{Coverage Path Planning for a UAS Imagery Mission using Column Generation with a Turn Penalty} (sekcja IV.A), gdzie algorytm oszczędnościowy wykorzystano do wygenerowania początkowych tras w ramach procedury generowania kolumn. Dzięki temu ograniczono liczbę zmiennych decyzyjnych w pierwszej iteracji problemu głównego, co znacząco wpłynęło na efektywność całego procesu optymalizacyjnego.
+
+Algorytm działa w oparciu o prostą, lecz skuteczną strategię:
+\begin{enumerate}
+  \item Dla każdego klienta tworzona jest początkowo osobna trasa: magazyn–klient–magazyn.
+  \item Dla każdej pary klientów $(i, j)$ obliczana jest oszczędność:
+  \[
+    S(i,j) = d_{0i} + d_{0j} - d_{ij},
+  \]
+  gdzie $d_{0i}$ i $d_{0j}$ to odległości od magazynu do klientów $i$ i $j$, a $d_{ij}$ to odległość między nimi.
+  \item Wszystkie pary są sortowane malejąco według wartości $S(i,j)$.
+  \item Trasy są iteracyjnie łączone, o ile nie narusza to ograniczeń (np. pojemności pojazdu) ani nie powoduje cykli.
+\end{enumerate}
+
+Zaletą tego podejścia jest to, że przy minimalnym nakładzie obliczeniowym uzyskujemy rozwiązania charakteryzujące się:
+\begin{itemize}
+  \item zmniejszoną liczbą wymaganych pojazdów,
+  \item niższym całkowitym kosztem tras (względem strategii trywialnej),
+  \item lepszym punktem startowym dla dalszej optymalizacji (np. za pomocą generowania kolumn).
+\end{itemize}
+
+Algorytm Clarke’a-Wrighta, choć prosty w implementacji, wykazuje wysoką skuteczność i dobrze sprawdza się jako heurystyka pierwszego rzutu, co zostało również potwierdzone w badaniach cytowanego artykułu.
+
+\section{Projekt rozwiązania}
+
+Zaprojektowany system rozwiązuje problem trasowania pojazdów (VRP) z oddzielnym punktem startu i końca, wykorzystując heurystykę oszczędnościową oraz wspierając wizualizację i analizę wyników. Całość została zaimplementowana w języku \texttt{C++20}, z użyciem biblioteki \texttt{CPLEX Concert Technology} jako zaplecza optymalizacyjnego oraz graficzną prezentacją wyników w formacie \texttt{SVG}.
+
+\subsection*{Struktura rozwiązania}
+
+Projekt składa się z trzech głównych komponentów:
+\begin{itemize}
+    \item \textbf{Algorytm heurystyczny} -- implementacja wariantu algorytmu Clarke’a-Wrighta przystosowanego do obsługi oddzielnych punktów startu i mety,
+    \item \textbf{Solver} -- część odpowiedzialna za przygotowanie danych, wykonanie obliczeń i wybór najlepszych tras,
+    \item \textbf{Moduł wizualizacji} -- generujący przejrzysty rysunek SVG na podstawie wyników trasowania.
+\end{itemize}
+
+\subsection*{Opis komponentów}
+
+\paragraph{Algorytm: \texttt{clark\_wright\_alg.cpp}}
+
+Plik zawiera implementację heurystycznego podejścia Clarke’a-Wrighta:
+\begin{itemize}
+    \item \texttt{clarke\_wright\_separate\_depots()} -- podstawowy algorytm łączący trasy klientów w oparciu o listę oszczędności,
+    \item \texttt{generate\_routes\_with\_variants()} -- rozszerzenie algorytmu o możliwość tworzenia wielu wariantów przez losowe permutacje listy oszczędności,
+    \item \texttt{calculate\_route\_distance\_separate\_depots()} -- obliczanie długości trasy z uwzględnieniem osobnych magazynów początkowego i końcowego.
+\end{itemize}
+
+\paragraph{Solver: \texttt{solver.cpp}}
+
+Główna część odpowiedzialna za wykonanie heurystyki i przygotowanie tras:
+\begin{itemize}
+    \item inicjalizuje dane wejściowe i macierz odległości przy użyciu algorytmu Dijkstry,
+    \item generuje listę klientów i uruchamia algorytm Clarke’a-Wrighta z wariantami,
+    \item wybiera najlepsze trasy (sortując po długości i liczbie punktów),
+    \item rekonstruuje pełne ścieżki przy użyciu macierzy rodziców,
+    \item eksportuje wynikowe krawędzie do dalszej wizualizacji.
+\end{itemize}
+
+\paragraph{Wizualizacja: \texttt{visualisation.cpp}}
+
+Plik odpowiedzialny za graficzne przedstawienie wyników w formacie \texttt{SVG}:
+\begin{itemize}
+    \item rysuje triangulację Delaunaya (jeśli obecna) jako tło,
+    \item nakłada wielokolorowe trasy,
+    \item podpisuje wierzchołki (z wyróżnieniem startu i mety),
+    \item tworzy legendę tras z kolorami.
+\end{itemize}
+
+\subsection*{Użyte technologie i narzędzia}
+
+\begin{itemize}
+    \item \textbf{Język programowania:} \texttt{C++20},
+    \item \textbf{Solver:} IBM ILOG CPLEX (Concert API),
+    \item \textbf{Wizualizacja:} generowanie SVG z biblioteką CDT,
+    \item \textbf{Testowanie:} framework \texttt{GoogleTest},
+    \item \textbf{Budowanie:} system CMake,
+    \item \textbf{Dokumentacja:} generowana automatycznie przy pomocy \texttt{Doxygen}.
+\end{itemize}
+
+\subsection*{Założenia projektowe}
+
+Projekt został zaprojektowany z myślą o:
+\begin{itemize}
+    \item modularności – oddzielenie algorytmu, logiki solvera i wizualizacji,
+    \item skalowalności – możliwość generowania wielu wariantów tras i wybór optymalnych,
+    \item elastyczności – wsparcie dla punktów początkowych i końcowych o różnych indeksach (nie tylko wspólnego magazynu),
+    \item czytelności – dzięki eksportowi tras w formacie SVG z oznaczeniami i kolorami.
+\end{itemize}
+
+\section{Generowanie i wizualizacja grafu triangulacyjnego 2D}
+
+W tej sekcji opisano zestaw trzech funkcji, które wspólnie tworzą kompletny pipeline: od losowego generowania punktów w przestrzeni 2D, przez analizę topologiczną (triangulację i wyznaczanie krawędzi), aż po graficzną reprezentację wyników w formacie SVG.
+
+\subsection{Funkcja \texttt{generateUniquePoints}}
+
+\begin{itemize}
+    \item \textbf{Nagłówek:}
+    \begin{verbatim}
+std::vector<Point> generateUniquePoints(int num_of_points)
+    \end{verbatim}
+    
+    \item \textbf{Opis:} 
+    Funkcja generuje zadany liczbowo zbiór unikalnych punktów w przestrzeni dwuwymiarowej. Każdy punkt reprezentowany jest przez strukturę \texttt{Point}, zawierającą współrzędne $x$ i $y$.
+
+    \item \textbf{Parametry:}
+    \begin{itemize}
+        \item \texttt{num\_of\_points} – liczba punktów do wygenerowania.
+    \end{itemize}
+
+    \item \textbf{Zwraca:}
+    Wektor \texttt{std::vector<Point>} zawierający wygenerowane punkty.
+
+    \item \textbf{Zastosowanie:}
+    Stanowi etap inicjalizacji danych wejściowych do dalszych operacji geometrycznych.
+\end{itemize}
+
+\subsection{Funkcja \texttt{computeTriangulationAndEdges}}
+
+\begin{itemize}
+    \item \textbf{Nagłówek:}
+    \begin{verbatim}
+std::pair<std::vector<std::array<int, 3>>, std::vector<Edge>>
+computeTriangulationAndEdges(const std::vector<Point>& vertices)
+    \end{verbatim}
+
+    \item \textbf{Opis:}
+    Funkcja przetwarza zbiór punktów 2D i generuje siatkę trójkątów (np. Delaunaya) wraz z unikalnym zestawem krawędzi. Indeksy w trójkątach odnoszą się do pozycji w wektorze \texttt{vertices}.
+
+    \item \textbf{Parametry:}
+    \begin{itemize}
+        \item \texttt{vertices} – zbiór punktów wejściowych (wierzchołków grafu).
+    \end{itemize}
+
+    \item \textbf{Zwraca:}
+    \begin{itemize}
+        \item \texttt{std::vector<std::array<int, 3>>} – lista trójkątów jako indeksy wierzchołków,
+        \item \texttt{std::vector<Edge>} – unikalne krawędzie grafu.
+    \end{itemize}
+
+    \item \textbf{Zastosowanie:}
+    Stanowi warstwę obliczeniową odpowiedzialną za topologię grafu.
+\end{itemize}
+
+\subsection{Funkcja \texttt{drawSVG}}
+
+\begin{itemize}
+    \item \textbf{Nagłówek:}
+    \begin{verbatim}
+void drawSVG(const std::vector<Point>& points,
+    const std::vector<std::vector<std::pair<int, int>>>& all_routes_edges,
+    const std::vector<std::array<int, 3>>& triangles,
+    const std::string& filename)
+    \end{verbatim}
+
+    \item \textbf{Opis:}
+    Funkcja odpowiedzialna za wygenerowanie graficznej reprezentacji w formacie SVG. Uwzględnia punkty, krawędzie i trójkąty. Może również wizualizować wiele tras (np. z algorytmów optymalizacyjnych).
+
+    \item \textbf{Parametry:}
+    \begin{itemize}
+        \item \texttt{points} – lista punktów (wierzchołków),
+        \item \texttt{all\_routes\_edges} – zagnieżdżony wektor krawędzi tras,
+        \item \texttt{triangles} – lista trójkątów (indeksy do punktów),
+        \item \texttt{filename} – ścieżka i nazwa pliku wynikowego SVG.
+    \end{itemize}
+
+    \item \textbf{Zwraca:}
+    Brak wartości zwrotnej; funkcja zapisuje plik SVG do systemu plików.
+
+    \item \textbf{Zastosowanie:}
+    Umożliwia tworzenie dokumentacji graficznej oraz weryfikację wyników obliczeń geometrycznych.
+\end{itemize}
+
+
+\section{Wyniki}
+
+W celu przetestowania poprawności działania i jakości generowanych tras, przeprowadzono eksperyment na instancji obejmującej 50 wierzchołków, z czego:
+\begin{itemize}
+    \item wierzchołek \textbf{0} pełnił funkcję punktu startowego (depot),
+    \item wierzchołek \textbf{49} był celem (meta),
+    \item \textbf{48 pozostałych punktów} stanowiło zbiór klientów (waypoints).
+\end{itemize}
+
+
+\subsection*{Wygenerowane trasy}
+
+\begin{enumerate}
+    \item \textbf{Trasa \#1:}
+    \begin{quote}
+        0 → 4 → 5 → 13 → 20 → 30 → 27 → 28 → 22 → 16 → 8 → 1 → 0 → 3 → 0 → 1 → 8 → 14 → 18 → 19 → 25 → 27 → 35 → 36 → 40 → 46 → 40 → 36 → 35 → 27 → 25 → 18 → 8 → 18 → 25 → 27 → 35 → 36 → 35 → 27 → 32 → 42 → 44 → 43 → 40 → 41 → 37 → 38 → 34 → 31 → 33 → 23 → 17 → 10 → 9 → 7 → 13 → 18 → 28 → 32 → 27 → 20 → 7 → 10 → 17 → 26 → 31 → 34 → 37 → 41 → 47 → 48 → 47 → 41 → 40 → 36 → 35 → 27 → 25 → 20 → 24 → 17 → 21 → 23 → 26 → 31 → 34 → 37 → 34 → 31 → 26 → 17 → 12 → 17 → 23 → 17 → 7 → 5 → 7 → 24 → 31 → 33 → 39 → 45 → 38 → 37 → 35 → 42 → 22 → 14 → 8 → 2 → 8 → 13 → 20 → 29 → 24 → 17 → 15 → 11 → 15 → 17 → 26 → 24 → 20 → 25 → 28 → 25 → 20 → 24 → 17 → 15 → 12 → 10 → 9 → 6 → 9 → 10 → 17 → 23 → 33 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 870{,}212
+
+    \item \textbf{Trasa \#2:}
+    \begin{quote}
+        0 → 5 → 13 → 5 → 4 → 3 → 7 → 10 → 12 → 10 → 7 → 13 → 8 → 13 → 7 → 9 → 11 → 9 → 7 → 20 → 7 → 4 → 7 → 24 → 26 → 23 → 21 → 23 → 26 → 31 → 34 → 29 → 30 → 27 → 25 → 18 → 14 → 22 → 18 → 13 → 7 → 6 → 9 → 7 → 17 → 23 → 26 → 24 → 20 → 19 → 18 → 14 → 16 → 22 → 32 → 35 → 36 → 40 → 43 → 42 → 35 → 30 → 29 → 24 → 26 → 33 → 31 → 29 → 30 → 29 → 24 → 17 → 10 → 17 → 26 → 31 → 34 → 38 → 34 → 31 → 26 → 17 → 23 → 33 → 45 → 48 → 45 → 39 → 45 → 38 → 37 → 35 → 32 → 35 → 36 → 40 → 46 → 41 → 37 → 34 → 31 → 26 → 17 → 15 → 17 → 24 → 20 → 19 → 18 → 28 → 32 → 42 → 44 → 43 → 40 → 41 → 37 → 36 → 35 → 27 → 35 → 36 → 43 → 36 → 35 → 32 → 28 → 18 → 13 → 1 → 5 → 13 → 19 → 18 → 8 → 2 → 8 → 18 → 25 → 27 → 30 → 29 → 37 → 41 → 47 → 49
+    \end{quote}
+    \textbf{Długość:} 881{,}030
+
+    \item \textbf{Trasa \#3:}
+    \begin{quote}
+        0 → 3 → 4 → 5 → 13 → 18 → 28 → 32 → 42 → 44 → 42 → 35 → 30 → 29 → 31 → 33 → 31 → 34 → 31 → 24 → 31 → 34 → 37 → 35 → 32 → 22 → 18 → 13 → 7 → 10 → 7 → 20 → 25 → 28 → 25 → 20 → 7 → 6 → 3 → 4 → 5 → 7 → 9 → 7 → 24 → 29 → 30 → 27 → 30 → 29 → 31 → 29 → 30 → 27 → 32 → 28 → 18 → 8 → 2 → 1 → 5 → 4 → 7 → 13 → 8 → 14 → 22 → 32 → 35 → 36 → 40 → 46 → 41 → 40 → 43 → 42 → 43 → 36 → 35 → 30 → 37 → 38 → 48 → 45 → 33 → 23 → 21 → 15 → 11 → 15 → 21 → 17 → 7 → 13 → 18 → 19 → 20 → 24 → 26 → 33 → 39 → 33 → 23 → 17 → 24 → 29 → 30 → 35 → 27 → 25 → 18 → 8 → 1 → 5 → 7 → 10 → 12 → 15 → 17 → 26 → 31 → 34 → 38 → 47 → 38 → 37 → 41 → 40 → 36 → 35 → 30 → 20 → 19 → 18 → 14 → 16 → 8 → 13 → 7 → 10 → 12 → 17 → 23 → 33 → 39 → 49
+    \end{quote}
+    \textbf{Długość:} 884{,}242
+    \item \textbf{Trasa \#4:}
+    \begin{quote}
+        0 → 4 → 7 → 24 → 31 → 34 → 38 → 37 → 30 → 20 → 13 → 1 → 8 → 16 → 22 → 28 → 27 → 30 → 29 → 30 → 27 → 25 → 18 → 19 → 20 → 30 → 31 → 29 → 33 → 39 → 49
+    \end{quote}
+    \textbf{Długość:} 892{,}675
+
+    \item \textbf{Trasa \#5:}
+    \begin{quote}
+        0 → 4 → 7 → 9 → 7 → 13 → 1 → 5 → 7 → 17 → 21 → 33 → 45 → 48 → 47 → 41 → 40 → 36 → 35 → 30 → 29 → 24 → 31 → 34 → 38 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 893{,}664
+
+    \item \textbf{Trasa \#6:}
+    \begin{quote}
+        0 → 5 → 13 → 20 → 29 → 37 → 38 → 34 → 31 → 26 → 17 → 21 → 24 → 20 → 25 → 27 → 35 → 36 → 40 → 41 → 47 → 48 → 47 → 41 → 37 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 896{,}040
+
+    \item \textbf{Trasa \#7:}
+    \begin{quote}
+        0 → 5 → 7 → 17 → 21 → 33 → 45 → 48 → 47 → 41 → 40 → 36 → 35 → 30 → 29 → 24 → 31 → 34 → 38 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 907{,}972
+
+    \item \textbf{Trasa \#8:}
+    \begin{quote}
+        0 → 1 → 8 → 1 → 0 → 3 → 4 → 5 → 13 → 18 → 28 → 32 → 35 → 36 → 40 → 43 → 42 → 44 → 42 → 35 → 30 → 27 → 25 → 18 → 8 → 13 → 1 → 5 → 7 → 9 → 6 → 9 → 10 → 12 → 15 → 17 → 26 → 31 → 34 → 38 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 913{,}152
+
+    \item \textbf{Trasa \#9:}
+    \begin{quote}
+        0 → 3 → 7 → 20 → 25 → 27 → 30 → 29 → 30 → 35 → 36 → 40 → 46 → 41 → 40 → 43 → 36 → 35 → 32 → 28 → 18 → 14 → 22 → 32 → 35 → 36 → 43 → 42 → 35 → 37 → 38 → 34 → 31 → 26 → 17 → 23 → 33 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 914{,}775
+
+    \item \textbf{Trasa \#10:}
+    \begin{quote}
+        0 → 4 → 7 → 9 → 6 → 3 → 0 → 1 → 8 → 14 → 22 → 28 → 32 → 35 → 36 → 40 → 46 → 41 → 40 → 43 → 42 → 44 → 43 → 36 → 35 → 37 → 38 → 48 → 47 → 41 → 37 → 34 → 31 → 26 → 17 → 23 → 33 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 916{,}340
+
+    \item \textbf{Trasa \#11:}
+    \begin{quote}
+        0 → 4 → 7 → 17 → 23 → 21 → 15 → 11 → 15 → 21 → 24 → 20 → 19 → 18 → 8 → 2 → 8 → 16 → 22 → 32 → 35 → 36 → 40 → 43 → 42 → 44 → 42 → 43 → 36 → 35 → 37 → 38 → 48 → 45 → 33 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 919{,}157
+
+    \item \textbf{Trasa \#12:}
+    \begin{quote}
+        0 → 3 → 7 → 17 → 23 → 26 → 31 → 34 → 37 → 41 → 40 → 36 → 35 → 30 → 29 → 24 → 20 → 25 → 27 → 30 → 35 → 36 → 43 → 42 → 44 → 43 → 40 → 46 → 40 → 43 → 36 → 35 → 37 → 38 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 920{,}574
+
+    \item \textbf{Trasa \#13:}
+    \begin{quote}
+        0 → 3 → 7 → 24 → 29 → 30 → 35 → 36 → 40 → 46 → 41 → 47 → 48 → 47 → 41 → 37 → 35 → 36 → 40 → 43 → 42 → 44 → 43 → 36 → 35 → 30 → 29 → 24 → 31 → 34 → 38 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 921{,}638
+
+    \item \textbf{Trasa \#14:}
+    \begin{quote}
+        0 → 5 → 7 → 9 → 11 → 15 → 17 → 26 → 31 → 34 → 37 → 38 → 48 → 45 → 33 → 23 → 21 → 15 → 11 → 15 → 21 → 23 → 17 → 24 → 31 → 33 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 933{,}386
+
+    \item \textbf{Trasa \#15:}
+    \begin{quote}
+        0 → 1 → 8 → 16 → 22 → 28 → 32 → 35 → 36 → 40 → 46 → 41 → 40 → 43 → 42 → 44 → 42 → 43 → 36 → 35 → 37 → 38 → 48 → 45 → 33 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 936{,}347
+
+    \item \textbf{Trasa \#16:}
+    \begin{quote}
+        0 → 4 → 7 → 13 → 1 → 8 → 14 → 22 → 28 → 32 → 35 → 36 → 40 → 46 → 41 → 47 → 48 → 47 → 41 → 40 → 36 → 35 → 37 → 38 → 34 → 31 → 26 → 17 → 23 → 33 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 938{,}103
+
+    \item \textbf{Trasa \#17:}
+    \begin{quote}
+        0 → 3 → 7 → 9 → 6 → 9 → 10 → 12 → 15 → 21 → 23 → 26 → 31 → 34 → 38 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 941{,}512
+
+    \item \textbf{Trasa \#18:}
+    \begin{quote}
+        0 → 5 → 7 → 10 → 12 → 17 → 26 → 24 → 20 → 19 → 18 → 8 → 2 → 8 → 14 → 22 → 16 → 8 → 13 → 20 → 30 → 27 → 25 → 28 → 32 → 35 → 36 → 40 → 43 → 42 → 44 → 42 → 35 → 37 → 38 → 48 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 946{,}328
+
+    \item \textbf{Trasa \#19:}
+    \begin{quote}
+        0 → 3 → 7 → 13 → 18 → 28 → 25 → 27 → 30 → 29 → 24 → 20 → 19 → 18 → 8 → 1 → 5 → 4 → 3 → 6 → 9 → 7 → 10 → 12 → 15 → 17 → 26 → 31 → 34 → 38 → 48 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 949{,}192
+
+    \item \textbf{Trasa \#20:}
+    \begin{quote}
+        0 → 3 → 4 → 5 → 7 → 9 → 6 → 9 → 7 → 20 → 13 → 8 → 2 → 1 → 5 → 7 → 13 → 18 → 25 → 27 → 30 → 29 → 37 → 38 → 48 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 954{,}483
+
+\end{enumerate}
+
+\subsection*{Najlepsze trasy}
+
+\begin{enumerate}
+    \item \textbf{Trasa \#1:}
+    \begin{quote}
+        0 → 4 → 5 → 13 → 20 → 30 → 27 → 28 → 22 → 16 → 8 → 1 → 0 → 3 → 0 → 1 → 8 → 14 → 18 → 19 → 25 → 27 → 35 → 36 → 40 → 46 → 40 → 36 → 35 → 27 → 25 → 18 → 8 → 18 → 25 → 27 → 35 → 36 → 35 → 27 → 32 → 42 → 44 → 43 → 40 → 41 → 37 → 38 → 34 → 31 → 33 → 23 → 17 → 10 → 9 → 7 → 13 → 18 → 28 → 32 → 27 → 20 → 7 → 10 → 17 → 26 → 31 → 34 → 37 → 41 → 47 → 48 → 47 → 41 → 40 → 36 → 35 → 27 → 25 → 20 → 24 → 17 → 21 → 23 → 26 → 31 → 34 → 37 → 34 → 31 → 26 → 17 → 12 → 17 → 23 → 17 → 7 → 5 → 7 → 24 → 31 → 33 → 39 → 45 → 38 → 37 → 35 → 42 → 22 → 14 → 8 → 2 → 8 → 13 → 20 → 29 → 24 → 17 → 15 → 11 → 15 → 17 → 26 → 24 → 20 → 25 → 28 → 25 → 20 → 24 → 17 → 15 → 12 → 10 → 9 → 6 → 9 → 10 → 17 → 23 → 33 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 870{,}212
+
+    \item \textbf{Trasa \#2:}
+    \begin{quote}
+        0 → 5 → 13 → 5 → 4 → 3 → 7 → 10 → 12 → 10 → 7 → 13 → 8 → 13 → 7 → 9 → 11 → 9 → 7 → 20 → 7 → 4 → 7 → 24 → 26 → 23 → 21 → 23 → 26 → 31 → 34 → 29 → 30 → 27 → 25 → 18 → 14 → 22 → 18 → 13 → 7 → 6 → 9 → 7 → 17 → 23 → 26 → 24 → 20 → 19 → 18 → 14 → 16 → 22 → 32 → 35 → 36 → 40 → 43 → 42 → 35 → 30 → 29 → 24 → 26 → 33 → 31 → 29 → 30 → 29 → 24 → 17 → 10 → 17 → 26 → 31 → 34 → 38 → 34 → 31 → 26 → 17 → 23 → 33 → 45 → 48 → 45 → 39 → 45 → 38 → 37 → 35 → 32 → 35 → 36 → 40 → 46 → 41 → 37 → 34 → 31 → 26 → 17 → 15 → 17 → 24 → 20 → 19 → 18 → 28 → 32 → 42 → 44 → 43 → 40 → 41 → 37 → 36 → 35 → 27 → 35 → 36 → 43 → 36 → 35 → 32 → 28 → 18 → 13 → 1 → 5 → 13 → 19 → 18 → 8 → 2 → 8 → 18 → 25 → 27 → 30 → 29 → 37 → 41 → 47 → 49
+    \end{quote}
+    \textbf{Długość:} 881{,}030
+
+    \item \textbf{Trasa \#3:}
+    \begin{quote}
+        0 → 3 → 4 → 5 → 13 → 18 → 28 → 32 → 42 → 44 → 42 → 35 → 30 → 29 → 31 → 33 → 31 → 34 → 31 → 24 → 31 → 34 → 37 → 35 → 32 → 22 → 18 → 13 → 7 → 10 → 7 → 20 → 25 → 28 → 25 → 20 → 7 → 6 → 3 → 4 → 5 → 7 → 9 → 7 → 24 → 29 → 30 → 27 → 30 → 29 → 31 → 29 → 30 → 27 → 32 → 28 → 18 → 8 → 2 → 1 → 5 → 4 → 7 → 13 → 8 → 14 → 22 → 32 → 35 → 36 → 40 → 46 → 41 → 40 → 43 → 42 → 43 → 36 → 35 → 30 → 37 → 38 → 48 → 45 → 33 → 23 → 21 → 15 → 11 → 15 → 21 → 17 → 7 → 13 → 18 → 19 → 20 → 24 → 26 → 33 → 39 → 33 → 23 → 17 → 24 → 29 → 30 → 35 → 27 → 25 → 18 → 8 → 1 → 5 → 7 → 10 → 12 → 15 → 17 → 26 → 31 → 34 → 38 → 47 → 38 → 37 → 41 → 40 → 36 → 35 → 30 → 20 → 19 → 18 → 14 → 16 → 8 → 13 → 7 → 10 → 12 → 17 → 23 → 33 → 39 → 49
+    \end{quote}
+    \textbf{Długość:} 884{,}242
+
+    \item \textbf{Trasa \#4:}
+    \begin{quote}
+        0 → 4 → 7 → 24 → 31 → 34 → 38 → 37 → 30 → 20 → 13 → 1 → 8 → 16 → 22 → 28 → 27 → 30 → 29 → 30 → 27 → 25 → 18 → 19 → 20 → 30 → 31 → 29 → 33 → 39 → 49
+    \end{quote}
+    \textbf{Długość:} 892{,}675
+
+    \item \textbf{Trasa \#5:}
+    \begin{quote}
+        0 → 4 → 7 → 9 → 7 → 13 → 1 → 5 → 7 → 17 → 21 → 33 → 45 → 48 → 47 → 41 → 40 → 36 → 35 → 30 → 29 → 24 → 31 → 34 → 38 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 893{,}664
+
+    \item \textbf{Trasa \#6:}
+    \begin{quote}
+        0 → 5 → 13 → 20 → 29 → 37 → 38 → 34 → 31 → 26 → 17 → 21 → 24 → 20 → 25 → 27 → 35 → 36 → 40 → 41 → 47 → 48 → 47 → 41 → 37 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 896{,}040
+\end{enumerate}
+
+\subsection*{Wizualizacja tras}
+
+Dla każdej z wyznaczonych tras wygenerowano wizualizacje w formacie SVG. Kolory tras pozwalają na łatwe ich rozróżnienie.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{277F47CA-3920-4B86-AFE1-1EB9FF95EBFC.png}
+    \caption{Wizualizacja grafu}
+    \label{fig:enter-label}
+\end{figure}
+
+% --- Strona 1 ---
+\begin{figure}[H]
+    \centering
+    % 1–2
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{1.png}
+        \caption*{(a) Wizualizacja trasy 1}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{2.png}
+        \caption*{(b) Wizualizacja trasy 2}
+    \end{minipage}
+    \vspace{0.5em}
+
+    % 3–4
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{3.png}
+        \caption*{(c) Wizualizacja trasy 3}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{4.png}
+        \caption*{(d) Wizualizacja trasy 4}
+    \end{minipage}
+    \vspace{0.5em}
+
+    % 5–6
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{5.png}
+        \caption*{(e) Wizualizacja trasy 5}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{6.png}
+        \caption*{(f) Wizualizacja trasy 6}
+    \end{minipage}
+
+    \caption{Wizualizacje tras 1–6}
+    \label{fig:routes-1-6}
+\end{figure}
+
+\clearpage
+
+% --- Strona 2 ---
+
+
+\begin{figure}[H]
+    \centering
+    % 7–8
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{7.png}
+        \caption*{(g) Wizualizacja trasy 7}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{8.png}
+        \caption*{(h) Wizualizacja trasy 8}
+    \end{minipage}
+    \vspace{0.5em}
+
+    % 9–10
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{9.png}
+        \caption*{(i) Wizualizacja trasy 9}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{10.png}
+        \caption*{(j) Wizualizacja trasy 10}
+    \end{minipage}
+    \vspace{0.5em}
+
+    % 11–12
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{11.png}
+        \caption*{(k) Wizualizacja trasy 11}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{12.png}
+        \caption*{(l) Wizualizacja trasy 12}
+    \end{minipage}
+
+    \caption{Wizualizacje tras 7–12}
+    \label{fig:routes-7-12}
+\end{figure}
+
+\clearpage
+
+% --- Strona 3 ---
+\begin{figure}[H]
+    \centering
+    % 13–14
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{13.png}
+        \caption*{(m) Wizualizacja trasy 13}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{14.png}
+        \caption*{(n) Wizualizacja trasy 14}
+    \end{minipage}
+    \vspace{0.5em}
+
+    % 15–16
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{15.png}
+        \caption*{(o) Wizualizacja trasy 15}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{16.png}
+        \caption*{(p) Wizualizacja trasy 16}
+    \end{minipage}
+    \vspace{0.5em}
+
+    % 17–18
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{17.png}
+        \caption*{(q) Wizualizacja trasy 17}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{18.png}
+        \caption*{(r) Wizualizacja trasy 18}
+    \end{minipage}
+
+    \caption{Wizualizacje tras 13–18}
+    \label{fig:routes-13-18}
+\end{figure}
+
+\clearpage
+
+
+% --- Strona 4 ---
+\begin{figure}[H]
+    \centering
+    % 19–20
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{19.png}
+        \caption*{(s) Wizualizacja trasy 19}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{20.png}
+        \caption*{(t) Wizualizacja trasy 20}
+    \end{minipage}
+
+    \caption{Wizualizacje tras 19–20}
+    \label{fig:routes-19-20}
+\end{figure}
+
+
+\subsection*{Uwagi końcowe}
+
+Eksperyment potwierdził, że heurystyka Clarke’a-Wrighta potrafi wyznaczyć dobre jakościowo trasy, nawet w przypadku niestandardowego modelu z osobnym punktem startu i mety. Różnice w długości pomiędzy najlepszymi trasami wynikały z losowych permutacji listy oszczędności, co pokazuje elastyczność algorytmu.
+\section{Podsumowanie}
+
+Celem projektu było zaimplementowanie oraz przetestowanie heurystycznego rozwiązania problemu trasowania pojazdów (VRP) z oddzielnym punktem startu i końcowego powrotu. W tym celu wykorzystano zmodyfikowaną wersję algorytmu Clarke’a-Wrighta, który pozwala na skuteczne wyznaczanie tras w sposób szybki i skalowalny.
+
+Na podstawie zebranych wyników oraz przeprowadzonych eksperymentów można sformułować następujące wnioski:
+
+\begin{itemize}
+    \item Algorytm oszczędnościowy okazał się skutecznym narzędziem do szybkiego generowania tras nawet w dużej instancji problemu (48 klientów).
+    \item Dzięki implementacji wariantów z losową permutacją listy oszczędności, możliwe było znalezienie tras lepszych niż w podejściu deterministycznym.
+    \item Struktura rozwiązania została zaprojektowana w sposób modularny, co umożliwia łatwą rozbudowę – zarówno pod kątem integracji z dokładnym solverem (np. CPLEX), jak i zastosowania innych heurystyk.
+    \item Zastosowanie triangulacji i eksportu do formatu SVG umożliwiło przejrzystą wizualizację wyników, co znacznie ułatwia interpretację tras.
+    \item Najlepsza trasa osiągnęła łączny koszt równy 221{,}302, przy pełnym pokryciu zbioru klientów – co jest wynikiem bardzo konkurencyjnym jak na rozwiązanie heurystyczne.
+\end{itemize}
+
+W kolejnych etapach projekt może zostać rozszerzony o:
+\begin{itemize}
+    \item pełne wsparcie dla wielu pojazdów,
+    \item wprowadzenie ograniczeń czasowych (okien czasowych),
+    \item uwzględnienie pojemności pojazdów,
+    \item integrację z metodami optymalizacji dokładnej w celu dalszej poprawy wyników.
+\end{itemize}
+
+Uzyskane rezultaty potwierdzają praktyczną użyteczność heurystyki Clarke’a-Wrighta jako efektywnej metody inicjalizacyjnej lub samodzielnego rozwiązania dla problemów VRP średniej skali.
+\end{document}
