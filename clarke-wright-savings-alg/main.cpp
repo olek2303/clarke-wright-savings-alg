@@ -43,8 +43,8 @@ int main()
         triangles.push_back(triangle);
     }
 
-    auto outputEdges = solveProblem(vertices, edges, 3);
-	std::vector<std::vector<std::pair<int, int>>> clearGraph;
+    auto outputEdges = solve_clarke_savings(vertices, edges, 3);
+    std::vector<std::vector<std::pair<int, int>>> clearGraph;
     drawSVG(vertices, outputEdges, triangles, "graph_with_route.svg");
     drawSVG(vertices, clearGraph, triangles, "graph_clear.svg");
 

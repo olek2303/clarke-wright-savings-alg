@@ -57,7 +57,7 @@ std::vector<int> reconstruct_path(int from, int to, const std::vector<std::vecto
 }
 
 
-std::vector<std::vector<std::pair<int, int>>> solveProblem(const std::vector<Point>& vertices, const std::vector<Edge>& edges, int n_of_roads)
+std::vector<std::vector<std::pair<int, int>>> solve_clarke_savings(const std::vector<Point>& vertices, const std::vector<Edge>& edges, int n_of_roads)
 {
     std::cout << "Solving with Clarke-Wright based heuristic...\n";
     std::vector<std::vector<std::pair<int, int>>> all_output_edges;
@@ -114,20 +114,20 @@ std::vector<std::vector<std::pair<int, int>>> solveProblem(const std::vector<Poi
         std::sort(sorted_routes.begin(), sorted_routes.end(),
             [](const Route& a, const Route& b) {
                 if (a.point_indices.size() != b.point_indices.size()) {
-                    return a.point_indices.size() > b.point_indices.size(); 
+                    return a.point_indices.size() > b.point_indices.size();
                 }
                 else {
-                    return a.total_distance < b.total_distance; 
+                    return a.total_distance < b.total_distance;
                 }
             });
 
-    
+
         int top_k = n_of_roads;
         int count = std::min(top_k, (int)sorted_routes.size());
 
         for (int i = 0; i < count; ++i) {
             const Route& best_route = sorted_routes[i];
-            std::vector<std::pair<int, int>> output_edges; 
+            std::vector<std::pair<int, int>> output_edges;
 
             if (!best_route.point_indices.empty()) {
                 std::cout << "Best route #" << (i + 1) << ": " << start_depot_idx;
@@ -159,7 +159,7 @@ std::vector<std::vector<std::pair<int, int>>> solveProblem(const std::vector<Poi
                     output_edges.emplace_back(path[j], path[j + 1]);
                 }
 
-                all_output_edges.push_back(std::move(output_edges)); 
+                all_output_edges.push_back(std::move(output_edges));
             }
         }
 
