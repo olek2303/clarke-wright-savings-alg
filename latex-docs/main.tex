@@ -155,71 +155,169 @@ W celu przetestowania poprawności działania i jakości generowanych tras, prze
     \item \textbf{48 pozostałych punktów} stanowiło zbiór klientów (waypoints).
 \end{itemize}
 
-Algorytm uruchomiono z generowaniem wielu wariantów tras i wyborem najlepszych wyników na podstawie łącznej długości trasy oraz liczby odwiedzanych punktów. Poniżej przedstawiono trzy najlepsze trasy wyznaczone przez heurystykę:
 \subsection*{Wygenerowane trasy}
 
 \begin{enumerate}
     \item \textbf{Trasa \#1:}
     \begin{quote}
-        0 → 5 → 19 → 23 → 26 → 34 → 36 → 13 → 27 → 22 → 17 → 21 → 24 → 38 → 41 → 9 → 7 → 6 → 14 → 1 → 16 → 25 → 29 → 32 → 33 → 40 → 49
+        0 → 4 → 5 → 13 → 20 → 30 → 27 → 28 → 22 → 16 → 8 → 1 → 0 → 3 → 0 → 1 → 8 → 14 → 18 → 19 → 25 → 27 → 35 → 36 → 40 → 46 → 40 → 36 → 35 → 27 → 25 → 18 → 8 → 18 → 25 → 27 → 35 → 36 → 35 → 27 → 32 → 42 → 44 → 43 → 40 → 41 → 37 → 38 → 34 → 31 → 33 → 23 → 17 → 10 → 9 → 7 → 13 → 18 → 28 → 32 → 27 → 20 → 7 → 10 → 17 → 26 → 31 → 34 → 37 → 41 → 47 → 48 → 47 → 41 → 40 → 36 → 35 → 27 → 25 → 20 → 24 → 17 → 21 → 23 → 26 → 31 → 34 → 37 → 34 → 31 → 26 → 17 → 12 → 17 → 23 → 17 → 7 → 5 → 7 → 24 → 31 → 33 → 39 → 45 → 38 → 37 → 35 → 42 → 22 → 14 → 8 → 2 → 8 → 13 → 20 → 29 → 24 → 17 → 15 → 11 → 15 → 17 → 26 → 24 → 20 → 25 → 28 → 25 → 20 → 24 → 17 → 15 → 12 → 10 → 9 → 6 → 9 → 10 → 17 → 23 → 33 → 45 → 49
     \end{quote}
-    \textbf{Długość:} 221{,}302
+    \textbf{Długość:} 870{,}212
 
     \item \textbf{Trasa \#2:}
     \begin{quote}
-        0 → 4 → 18 → 26 → 27 → 34 → 36 → 13 → 19 → 23 → 35 → 22 → 38 → 17 → 21 → 24 → 41 → 9 → 7 → 6 → 8 → 15 → 20 → 30 → 32 → 40 → 49
+        0 → 5 → 13 → 5 → 4 → 3 → 7 → 10 → 12 → 10 → 7 → 13 → 8 → 13 → 7 → 9 → 11 → 9 → 7 → 20 → 7 → 4 → 7 → 24 → 26 → 23 → 21 → 23 → 26 → 31 → 34 → 29 → 30 → 27 → 25 → 18 → 14 → 22 → 18 → 13 → 7 → 6 → 9 → 7 → 17 → 23 → 26 → 24 → 20 → 19 → 18 → 14 → 16 → 22 → 32 → 35 → 36 → 40 → 43 → 42 → 35 → 30 → 29 → 24 → 26 → 33 → 31 → 29 → 30 → 29 → 24 → 17 → 10 → 17 → 26 → 31 → 34 → 38 → 34 → 31 → 26 → 17 → 23 → 33 → 45 → 48 → 45 → 39 → 45 → 38 → 37 → 35 → 32 → 35 → 36 → 40 → 46 → 41 → 37 → 34 → 31 → 26 → 17 → 15 → 17 → 24 → 20 → 19 → 18 → 28 → 32 → 42 → 44 → 43 → 40 → 41 → 37 → 36 → 35 → 27 → 35 → 36 → 43 → 36 → 35 → 32 → 28 → 18 → 13 → 1 → 5 → 13 → 19 → 18 → 8 → 2 → 8 → 18 → 25 → 27 → 30 → 29 → 37 → 41 → 47 → 49
     \end{quote}
-    \textbf{Długość:} 239{,}384
+    \textbf{Długość:} 881{,}030
 
     \item \textbf{Trasa \#3:}
     \begin{quote}
-        0 → 5 → 26 → 27 → 34 → 36 → 19 → 13 → 35 → 22 → 38 → 17 → 21 → 24 → 41 → 9 → 7 → 6 → 14 → 1 → 16 → 25 → 29 → 33 → 37 → 42 → 49
+        0 → 3 → 4 → 5 → 13 → 18 → 28 → 32 → 42 → 44 → 42 → 35 → 30 → 29 → 31 → 33 → 31 → 34 → 31 → 24 → 31 → 34 → 37 → 35 → 32 → 22 → 18 → 13 → 7 → 10 → 7 → 20 → 25 → 28 → 25 → 20 → 7 → 6 → 3 → 4 → 5 → 7 → 9 → 7 → 24 → 29 → 30 → 27 → 30 → 29 → 31 → 29 → 30 → 27 → 32 → 28 → 18 → 8 → 2 → 1 → 5 → 4 → 7 → 13 → 8 → 14 → 22 → 32 → 35 → 36 → 40 → 46 → 41 → 40 → 43 → 42 → 43 → 36 → 35 → 30 → 37 → 38 → 48 → 45 → 33 → 23 → 21 → 15 → 11 → 15 → 21 → 17 → 7 → 13 → 18 → 19 → 20 → 24 → 26 → 33 → 39 → 33 → 23 → 17 → 24 → 29 → 30 → 35 → 27 → 25 → 18 → 8 → 1 → 5 → 7 → 10 → 12 → 15 → 17 → 26 → 31 → 34 → 38 → 47 → 38 → 37 → 41 → 40 → 36 → 35 → 30 → 20 → 19 → 18 → 14 → 16 → 8 → 13 → 7 → 10 → 12 → 17 → 23 → 33 → 39 → 49
     \end{quote}
-    \textbf{Długość:} 246{,}627
-\end{enumerate}
+    \textbf{Długość:} 884{,}242
+    \item \textbf{Trasa \#4:}
+    \begin{quote}
+        0 → 4 → 7 → 24 → 31 → 34 → 38 → 37 → 30 → 20 → 13 → 1 → 8 → 16 → 22 → 28 → 27 → 30 → 29 → 30 → 27 → 25 → 18 → 19 → 20 → 30 → 31 → 29 → 33 → 39 → 49
+    \end{quote}
+    \textbf{Długość:} 892{,}675
 
-Najkrótsza znaleziona trasa miała łączny koszt 221{,}302 i obejmowała 26 klientów.
+    \item \textbf{Trasa \#5:}
+    \begin{quote}
+        0 → 4 → 7 → 9 → 7 → 13 → 1 → 5 → 7 → 17 → 21 → 33 → 45 → 48 → 47 → 41 → 40 → 36 → 35 → 30 → 29 → 24 → 31 → 34 → 38 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 893{,}664
+
+    \item \textbf{Trasa \#6:}
+    \begin{quote}
+        0 → 5 → 13 → 20 → 29 → 37 → 38 → 34 → 31 → 26 → 17 → 21 → 24 → 20 → 25 → 27 → 35 → 36 → 40 → 41 → 47 → 48 → 47 → 41 → 37 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 896{,}040
+
+    \item \textbf{Trasa \#7:}
+    \begin{quote}
+        0 → 5 → 7 → 17 → 21 → 33 → 45 → 48 → 47 → 41 → 40 → 36 → 35 → 30 → 29 → 24 → 31 → 34 → 38 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 907{,}972
+
+    \item \textbf{Trasa \#8:}
+    \begin{quote}
+        0 → 1 → 8 → 1 → 0 → 3 → 4 → 5 → 13 → 18 → 28 → 32 → 35 → 36 → 40 → 43 → 42 → 44 → 42 → 35 → 30 → 27 → 25 → 18 → 8 → 13 → 1 → 5 → 7 → 9 → 6 → 9 → 10 → 12 → 15 → 17 → 26 → 31 → 34 → 38 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 913{,}152
+
+    \item \textbf{Trasa \#9:}
+    \begin{quote}
+        0 → 3 → 7 → 20 → 25 → 27 → 30 → 29 → 30 → 35 → 36 → 40 → 46 → 41 → 40 → 43 → 36 → 35 → 32 → 28 → 18 → 14 → 22 → 32 → 35 → 36 → 43 → 42 → 35 → 37 → 38 → 34 → 31 → 26 → 17 → 23 → 33 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 914{,}775
+
+    \item \textbf{Trasa \#10:}
+    \begin{quote}
+        0 → 4 → 7 → 9 → 6 → 3 → 0 → 1 → 8 → 14 → 22 → 28 → 32 → 35 → 36 → 40 → 46 → 41 → 40 → 43 → 42 → 44 → 43 → 36 → 35 → 37 → 38 → 48 → 47 → 41 → 37 → 34 → 31 → 26 → 17 → 23 → 33 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 916{,}340
+
+    \item \textbf{Trasa \#11:}
+    \begin{quote}
+        0 → 4 → 7 → 17 → 23 → 21 → 15 → 11 → 15 → 21 → 24 → 20 → 19 → 18 → 8 → 2 → 8 → 16 → 22 → 32 → 35 → 36 → 40 → 43 → 42 → 44 → 42 → 43 → 36 → 35 → 37 → 38 → 48 → 45 → 33 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 919{,}157
+
+    \item \textbf{Trasa \#12:}
+    \begin{quote}
+        0 → 3 → 7 → 17 → 23 → 26 → 31 → 34 → 37 → 41 → 40 → 36 → 35 → 30 → 29 → 24 → 20 → 25 → 27 → 30 → 35 → 36 → 43 → 42 → 44 → 43 → 40 → 46 → 40 → 43 → 36 → 35 → 37 → 38 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 920{,}574
+
+    \item \textbf{Trasa \#13:}
+    \begin{quote}
+        0 → 3 → 7 → 24 → 29 → 30 → 35 → 36 → 40 → 46 → 41 → 47 → 48 → 47 → 41 → 37 → 35 → 36 → 40 → 43 → 42 → 44 → 43 → 36 → 35 → 30 → 29 → 24 → 31 → 34 → 38 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 921{,}638
+
+    \item \textbf{Trasa \#14:}
+    \begin{quote}
+        0 → 5 → 7 → 9 → 11 → 15 → 17 → 26 → 31 → 34 → 37 → 38 → 48 → 45 → 33 → 23 → 21 → 15 → 11 → 15 → 21 → 23 → 17 → 24 → 31 → 33 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 933{,}386
+
+    \item \textbf{Trasa \#15:}
+    \begin{quote}
+        0 → 1 → 8 → 16 → 22 → 28 → 32 → 35 → 36 → 40 → 46 → 41 → 40 → 43 → 42 → 44 → 42 → 43 → 36 → 35 → 37 → 38 → 48 → 45 → 33 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 936{,}347
+
+    \item \textbf{Trasa \#16:}
+    \begin{quote}
+        0 → 4 → 7 → 13 → 1 → 8 → 14 → 22 → 28 → 32 → 35 → 36 → 40 → 46 → 41 → 47 → 48 → 47 → 41 → 40 → 36 → 35 → 37 → 38 → 34 → 31 → 26 → 17 → 23 → 33 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 938{,}103
+
+    \item \textbf{Trasa \#17:}
+    \begin{quote}
+        0 → 3 → 7 → 9 → 6 → 9 → 10 → 12 → 15 → 21 → 23 → 26 → 31 → 34 → 38 → 39 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 941{,}512
+
+    \item \textbf{Trasa \#18:}
+    \begin{quote}
+        0 → 5 → 7 → 10 → 12 → 17 → 26 → 24 → 20 → 19 → 18 → 8 → 2 → 8 → 14 → 22 → 16 → 8 → 13 → 20 → 30 → 27 → 25 → 28 → 32 → 35 → 36 → 40 → 43 → 42 → 44 → 42 → 35 → 37 → 38 → 48 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 946{,}328
+
+    \item \textbf{Trasa \#19:}
+    \begin{quote}
+        0 → 3 → 7 → 13 → 18 → 28 → 25 → 27 → 30 → 29 → 24 → 20 → 19 → 18 → 8 → 1 → 5 → 4 → 3 → 6 → 9 → 7 → 10 → 12 → 15 → 17 → 26 → 31 → 34 → 38 → 48 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 949{,}192
+
+    \item \textbf{Trasa \#20:}
+    \begin{quote}
+        0 → 3 → 4 → 5 → 7 → 9 → 6 → 9 → 7 → 20 → 13 → 8 → 2 → 1 → 5 → 7 → 13 → 18 → 25 → 27 → 30 → 29 → 37 → 38 → 48 → 45 → 49
+    \end{quote}
+    \textbf{Długość:} 954{,}483
+
+\end{enumerate}
 
 \subsection*{Najlepsze trasy}
 
 \begin{enumerate}
     \item \textbf{Trasa \#1:}
     \begin{quote}
-        0 → 5 → 19 → 23 → 26 → 34 → 36 → 13 → 27 → 22 → 17 → 21 → 24 → 38 → 41 → 9 → 7 → 6 → 14 → 1 → 16 → 25 → 29 → 32 → 33 → 40 → 49
+        0 → 4 → 5 → 13 → 20 → 30 → 27 → 28 → 22 → 16 → 8 → 1 → 0 → 3 → 0 → 1 → 8 → 14 → 18 → 19 → 25 → 27 → 35 → 36 → 40 → 46 → 40 → 36 → 35 → 27 → 25 → 18 → 8 → 18 → 25 → 27 → 35 → 36 → 35 → 27 → 32 → 42 → 44 → 43 → 40 → 41 → 37 → 38 → 34 → 31 → 33 → 23 → 17 → 10 → 9 → 7 → 13 → 18 → 28 → 32 → 27 → 20 → 7 → 10 → 17 → 26 → 31 → 34 → 37 → 41 → 47 → 48 → 47 → 41 → 40 → 36 → 35 → 27 → 25 → 20 → 24 → 17 → 21 → 23 → 26 → 31 → 34 → 37 → 34 → 31 → 26 → 17 → 12 → 17 → 23 → 17 → 7 → 5 → 7 → 24 → 31 → 33 → 39 → 45 → 38 → 37 → 35 → 42 → 22 → 14 → 8 → 2 → 8 → 13 → 20 → 29 → 24 → 17 → 15 → 11 → 15 → 17 → 26 → 24 → 20 → 25 → 28 → 25 → 20 → 24 → 17 → 15 → 12 → 10 → 9 → 6 → 9 → 10 → 17 → 23 → 33 → 45 → 49
     \end{quote}
-    \textbf{Długość:} 221{,}302
+    \textbf{Długość:} 870{,}212
 
     \item \textbf{Trasa \#2:}
     \begin{quote}
-        0 → 4 → 18 → 26 → 27 → 34 → 36 → 13 → 19 → 23 → 35 → 22 → 38 → 17 → 21 → 24 → 41 → 9 → 7 → 6 → 8 → 15 → 20 → 30 → 32 → 40 → 49
+        0 → 5 → 13 → 5 → 4 → 3 → 7 → 10 → 12 → 10 → 7 → 13 → 8 → 13 → 7 → 9 → 11 → 9 → 7 → 20 → 7 → 4 → 7 → 24 → 26 → 23 → 21 → 23 → 26 → 31 → 34 → 29 → 30 → 27 → 25 → 18 → 14 → 22 → 18 → 13 → 7 → 6 → 9 → 7 → 17 → 23 → 26 → 24 → 20 → 19 → 18 → 14 → 16 → 22 → 32 → 35 → 36 → 40 → 43 → 42 → 35 → 30 → 29 → 24 → 26 → 33 → 31 → 29 → 30 → 29 → 24 → 17 → 10 → 17 → 26 → 31 → 34 → 38 → 34 → 31 → 26 → 17 → 23 → 33 → 45 → 48 → 45 → 39 → 45 → 38 → 37 → 35 → 32 → 35 → 36 → 40 → 46 → 41 → 37 → 34 → 31 → 26 → 17 → 15 → 17 → 24 → 20 → 19 → 18 → 28 → 32 → 42 → 44 → 43 → 40 → 41 → 37 → 36 → 35 → 27 → 35 → 36 → 43 → 36 → 35 → 32 → 28 → 18 → 13 → 1 → 5 → 13 → 19 → 18 → 8 → 2 → 8 → 18 → 25 → 27 → 30 → 29 → 37 → 41 → 47 → 49
     \end{quote}
-    \textbf{Długość:} 239{,}384
+    \textbf{Długość:} 881{,}030
 
     \item \textbf{Trasa \#3:}
     \begin{quote}
-        0 → 5 → 26 → 27 → 34 → 36 → 19 → 13 → 35 → 22 → 38 → 17 → 21 → 24 → 41 → 9 → 7 → 6 → 14 → 1 → 16 → 25 → 29 → 33 → 37 → 42 → 49
+        0 → 3 → 4 → 5 → 13 → 18 → 28 → 32 → 42 → 44 → 42 → 35 → 30 → 29 → 31 → 33 → 31 → 34 → 31 → 24 → 31 → 34 → 37 → 35 → 32 → 22 → 18 → 13 → 7 → 10 → 7 → 20 → 25 → 28 → 25 → 20 → 7 → 6 → 3 → 4 → 5 → 7 → 9 → 7 → 24 → 29 → 30 → 27 → 30 → 29 → 31 → 29 → 30 → 27 → 32 → 28 → 18 → 8 → 2 → 1 → 5 → 4 → 7 → 13 → 8 → 14 → 22 → 32 → 35 → 36 → 40 → 46 → 41 → 40 → 43 → 42 → 43 → 36 → 35 → 30 → 37 → 38 → 48 → 45 → 33 → 23 → 21 → 15 → 11 → 15 → 21 → 17 → 7 → 13 → 18 → 19 → 20 → 24 → 26 → 33 → 39 → 33 → 23 → 17 → 24 → 29 → 30 → 35 → 27 → 25 → 18 → 8 → 1 → 5 → 7 → 10 → 12 → 15 → 17 → 26 → 31 → 34 → 38 → 47 → 38 → 37 → 41 → 40 → 36 → 35 → 30 → 20 → 19 → 18 → 14 → 16 → 8 → 13 → 7 → 10 → 12 → 17 → 23 → 33 → 39 → 49
     \end{quote}
-    \textbf{Długość:} 246{,}627
-     \item \textbf{Trasa \#4:}
+    \textbf{Długość:} 884{,}242
+
+    \item \textbf{Trasa \#4:}
     \begin{quote}
-        0 → 5 → 19 → 23 → 26 → 34 → 36 → 13 → 27 → 22 → 17 → 21 → 24 → 38 → 41 → 9 → 7 → 6 → 14 → 1 → 16 → 25 → 29 → 32 → 33 → 40 → 49
+        0 → 4 → 7 → 24 → 31 → 34 → 38 → 37 → 30 → 20 → 13 → 1 → 8 → 16 → 22 → 28 → 27 → 30 → 29 → 30 → 27 → 25 → 18 → 19 → 20 → 30 → 31 → 29 → 33 → 39 → 49
     \end{quote}
-    \textbf{Długość:} 221{,}302
+    \textbf{Długość:} 892{,}675
 
     \item \textbf{Trasa \#5:}
     \begin{quote}
-        0 → 4 → 18 → 26 → 27 → 34 → 36 → 13 → 19 → 23 → 35 → 22 → 38 → 17 → 21 → 24 → 41 → 9 → 7 → 6 → 8 → 15 → 20 → 30 → 32 → 40 → 49
+        0 → 4 → 7 → 9 → 7 → 13 → 1 → 5 → 7 → 17 → 21 → 33 → 45 → 48 → 47 → 41 → 40 → 36 → 35 → 30 → 29 → 24 → 31 → 34 → 38 → 39 → 45 → 49
     \end{quote}
-    \textbf{Długość:} 239{,}384
+    \textbf{Długość:} 893{,}664
 
     \item \textbf{Trasa \#6:}
     \begin{quote}
-        0 → 5 → 26 → 27 → 34 → 36 → 19 → 13 → 35 → 22 → 38 → 17 → 21 → 24 → 41 → 9 → 7 → 6 → 14 → 1 → 16 → 25 → 29 → 33 → 37 → 42 → 49
+        0 → 5 → 13 → 20 → 29 → 37 → 38 → 34 → 31 → 26 → 17 → 21 → 24 → 20 → 25 → 27 → 35 → 36 → 40 → 41 → 47 → 48 → 47 → 41 → 37 → 39 → 45 → 49
     \end{quote}
-    \textbf{Długość:} 246{,}627
+    \textbf{Długość:} 896{,}040
 \end{enumerate}
-
-Najkrótsza znaleziona trasa miała łączny koszt 221{,}302 i obejmowała 26 klientów.
 
 \subsection*{Wizualizacja tras}
 
@@ -227,48 +325,164 @@ Dla każdej z wyznaczonych tras wygenerowano wizualizacje w formacie SVG. Kolory
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{375D41B5-CECC-49F4-95EB-B779CC90831A.png}
+    \includegraphics[width=1\linewidth]{277F47CA-3920-4B86-AFE1-1EB9FF95EBFC.png}
     \caption{Wizualizacja rozwiązania bez oznaczenia tras}
     \label{fig:enter-label}
 \end{figure}
 
+% --- Strona 1 ---
 \begin{figure}[H]
     \centering
+    % 1–2
     \begin{minipage}[b]{0.48\linewidth}
-        \includegraphics[width=\linewidth]{423C496B-894F-48DF-AD3A-845B3B00989B.png}
-        \caption*{(a) Wizualizacja pierwszej trasy}
+        \includegraphics[width=\linewidth]{1.png}
+        \caption*{(a) Wizualizacja trasy 1}
     \end{minipage}
     \hfill
     \begin{minipage}[b]{0.48\linewidth}
-        \includegraphics[width=\linewidth]{423C496B-894F-48DF-AD3A-845B3B00989B.png}
-        \caption*{(b) Wizualizacja drugiej trasy}
+        \includegraphics[width=\linewidth]{2.png}
+        \caption*{(b) Wizualizacja trasy 2}
+    \end{minipage}
+    \vspace{0.5em}
+
+    % 3–4
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{3.png}
+        \caption*{(c) Wizualizacja trasy 3}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{4.png}
+        \caption*{(d) Wizualizacja trasy 4}
+    \end{minipage}
+    \vspace{0.5em}
+
+    % 5–6
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{5.png}
+        \caption*{(e) Wizualizacja trasy 5}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{6.png}
+        \caption*{(f) Wizualizacja trasy 6}
     \end{minipage}
 
-    \vspace{0.5em}
-    \begin{minipage}[b]{0.48\linewidth}
-        \includegraphics[width=\linewidth]{423C496B-894F-48DF-AD3A-845B3B00989B.png}
-        \caption*{(c) Wizualizacja trzeciej trasy}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[b]{0.48\linewidth}
-        \includegraphics[width=\linewidth]{423C496B-894F-48DF-AD3A-845B3B00989B.png}
-        \caption*{(d) Wizualizacja czwartej trasy}
-    \end{minipage}
-
-    \vspace{0.5em}
-    \begin{minipage}[b]{0.48\linewidth}
-        \includegraphics[width=\linewidth]{423C496B-894F-48DF-AD3A-845B3B00989B.png}
-        \caption*{(e) Wizualizacja piątej trasy}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[b]{0.48\linewidth}
-        \includegraphics[width=\linewidth]{423C496B-894F-48DF-AD3A-845B3B00989B.png}
-        \caption*{(f) Wizualizacja szóstej trasy}
-    \end{minipage}
-    
-    \caption{Wizualizacje sześciu tras}
-    \label{fig:all-routes}
+    \caption{Wizualizacje tras 1–6}
+    \label{fig:routes-1-6}
 \end{figure}
+
+\clearpage
+
+% --- Strona 2 ---
+
+
+\begin{figure}[H]
+    \centering
+    % 7–8
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{7.png}
+        \caption*{(g) Wizualizacja trasy 7}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{8.png}
+        \caption*{(h) Wizualizacja trasy 8}
+    \end{minipage}
+    \vspace{0.5em}
+
+    % 9–10
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{9.png}
+        \caption*{(i) Wizualizacja trasy 9}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{10.png}
+        \caption*{(j) Wizualizacja trasy 10}
+    \end{minipage}
+    \vspace{0.5em}
+
+    % 11–12
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{11.png}
+        \caption*{(k) Wizualizacja trasy 11}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{12.png}
+        \caption*{(l) Wizualizacja trasy 12}
+    \end{minipage}
+
+    \caption{Wizualizacje tras 7–12}
+    \label{fig:routes-7-12}
+\end{figure}
+
+\clearpage
+
+% --- Strona 3 ---
+\begin{figure}[H]
+    \centering
+    % 13–14
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{13.png}
+        \caption*{(m) Wizualizacja trasy 13}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{14.png}
+        \caption*{(n) Wizualizacja trasy 14}
+    \end{minipage}
+    \vspace{0.5em}
+
+    % 15–16
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{15.png}
+        \caption*{(o) Wizualizacja trasy 15}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{16.png}
+        \caption*{(p) Wizualizacja trasy 16}
+    \end{minipage}
+    \vspace{0.5em}
+
+    % 17–18
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{17.png}
+        \caption*{(q) Wizualizacja trasy 17}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{18.png}
+        \caption*{(r) Wizualizacja trasy 18}
+    \end{minipage}
+
+    \caption{Wizualizacje tras 13–18}
+    \label{fig:routes-13-18}
+\end{figure}
+
+\clearpage
+
+
+% --- Strona 4 ---
+\begin{figure}[H]
+    \centering
+    % 19–20
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{19.png}
+        \caption*{(s) Wizualizacja trasy 19}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{20.png}
+        \caption*{(t) Wizualizacja trasy 20}
+    \end{minipage}
+
+    \caption{Wizualizacje tras 19–20}
+    \label{fig:routes-19-20}
+\end{figure}
+
 
 \subsection*{Uwagi końcowe}
 
