@@ -41,11 +41,22 @@ int main()
 
     }
 
-    auto outputEdges = solveProblem(vertices, edges, 3);
+    auto outputEdges = solveProblem(vertices, edges, 20);
 	std::vector<std::vector<std::pair<int, int>>> clearGraph;
-    drawSVG(vertices, outputEdges, triangles, "graph_with_route.svg");
-    drawSVG(vertices, clearGraph, triangles, "graph_clear.svg");
 
+// Pętla do rysowania każdej trasy w osobnym pliku
+    for (int i = 0; i < outputEdges.size(); ++i) {
+        // Stwórz dynamiczną nazwę pliku, np. "graph_with_route_0.svg", "graph_with_route_1.svg" itd.
+        std::string filename = "graph_with_route_" + std::to_string(i) + ".svg";
+
+        // Stwórz wektor zawierający tylko jedną, bieżącą trasę
+        // Zakładam, że drawSVG oczekuje formatu std::vector<std::vector<...>>
+        std::vector<std::vector<std::pair<int, int>>> singleRoute = { outputEdges[i] };
+
+        // Narysuj SVG dla pojedynczej trasy
+        drawSVG(vertices, singleRoute, triangles, filename);
+    }
+    drawSVG(vertices, clearGraph, triangles, "graph_clear.svg");
 
     return 0;
 }

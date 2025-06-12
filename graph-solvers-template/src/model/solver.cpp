@@ -14,7 +14,7 @@
 #include <queue>
 
 void dijkstra(int source, const std::vector<std::vector<std::pair<int, double>>>& adj,
-    std::vector<double>& dist, std::vector<int>& parent) {
+              std::vector<double>& dist, std::vector<int>& parent) {
     int n = (int)adj.size();
     dist.assign(n, std::numeric_limits<double>::infinity());
     parent.assign(n, -1);
@@ -102,7 +102,7 @@ std::vector<std::vector<std::pair<int, int>>> solveProblem(const std::vector<Poi
         }
 
         std::vector<Route> routes = generate_routes_with_variants(
-            start_depot_idx, end_depot_idx, nodes, dist_matrix, num_waypoints * 10);
+                start_depot_idx, end_depot_idx, nodes, dist_matrix, num_waypoints * 10);
 
         if (routes.empty()) {
             std::cerr << "No routes found!.\n";
@@ -112,56 +112,61 @@ std::vector<std::vector<std::pair<int, int>>> solveProblem(const std::vector<Poi
 
         std::vector<Route> sorted_routes = routes;
         std::sort(sorted_routes.begin(), sorted_routes.end(),
-            [](const Route& a, const Route& b) {
-                if (a.point_indices.size() != b.point_indices.size()) {
-                    return a.point_indices.size() > b.point_indices.size(); 
-                }
-                else {
-                    return a.total_distance < b.total_distance; 
-                }
-            });
+                  [](const Route& a, const Route& b) {
+                      if (a.point_indices.size() != b.point_indices.size()) {
+                          return a.point_indices.size() > b.point_indices.size();
+                      }
+                      else {
+                          return a.total_distance < b.total_distance;
+                      }
+                  });
 
-    
+
         int top_k = n_of_roads;
         int count = std::min(top_k, (int)sorted_routes.size());
 
         for (int i = 0; i < count; ++i) {
             const Route& best_route = sorted_routes[i];
-            std::vector<std::pair<int, int>> output_edges; 
+            std::vector<std::pair<int, int>> output_edges;
 
             if (!best_route.point_indices.empty()) {
-                std::cout << "Best route #" << (i + 1) << ": " << start_depot_idx;
-                for (int curr : best_route.point_indices) {
-                    std::cout << " -> " << curr;
-                }
-                std::cout << " -> " << end_depot_idx << "\n";
-                std::cout << "Total distance of best route #" << (i + 1) << ": " << best_route.total_distance << "\n";
-
                 int prev = start_depot_idx;
+                std::cout << "Best route #" << (i + 1) << ": " << prev;
 
+                // Przejście przez wszystkie punkty trasy
                 for (int curr : best_route.point_indices) {
                     std::vector<int> path = reconstruct_path(prev, curr, parent_matrix);
                     if (path.empty()) {
-                        std::cerr << "No path between: " << prev << " a " << curr << "\n";
+                        std::cerr << "No path between: " << prev << " and " << curr << "\n";
                         continue;
                     }
-                    for (size_t j = 0; j + 1 < path.size(); ++j) {
-                        output_edges.emplace_back(path[j], path[j + 1]);
+
+                    // Dodaj do wypisywania i output_edges (z pominięciem duplikatu prev)
+                    for (size_t j = 1; j < path.size(); ++j) {
+                        std::cout << " -> " << path[j];
+                        output_edges.emplace_back(path[j - 1], path[j]);
                     }
                     prev = curr;
                 }
 
+                // Na koniec ścieżka do końcowego punktu (end depot)
                 std::vector<int> path = reconstruct_path(prev, end_depot_idx, parent_matrix);
                 if (path.empty()) {
-                    std::cerr << "No path between: " << prev << " a " << end_depot_idx << "\n";
+                    std::cerr << "No path between: " << prev << " and " << end_depot_idx << "\n";
                 }
-                for (size_t j = 0; j + 1 < path.size(); ++j) {
-                    output_edges.emplace_back(path[j], path[j + 1]);
+                else {
+                    for (size_t j = 1; j < path.size(); ++j) {
+                        std::cout << " -> " << path[j];
+                        output_edges.emplace_back(path[j - 1], path[j]);
+                    }
                 }
 
-                all_output_edges.push_back(std::move(output_edges)); 
+                std::cout << "\nTotal distance of best route #" << (i + 1) << ": " << best_route.total_distance << "\n";
+
+                all_output_edges.push_back(std::move(output_edges));
             }
         }
+
 
     }
     catch (const IloException& e) {
@@ -177,4 +182,3 @@ std::vector<std::vector<std::pair<int, int>>> solveProblem(const std::vector<Poi
     env.end();
     return all_output_edges;
 }
-
