@@ -146,6 +146,90 @@ Projekt został zaprojektowany z myślą o:
     \item czytelności – dzięki eksportowi tras w formacie SVG z oznaczeniami i kolorami.
 \end{itemize}
 
+\section{Generowanie i wizualizacja grafu triangulacyjnego 2D}
+
+W tej sekcji opisano zestaw trzech funkcji, które wspólnie tworzą kompletny pipeline: od losowego generowania punktów w przestrzeni 2D, przez analizę topologiczną (triangulację i wyznaczanie krawędzi), aż po graficzną reprezentację wyników w formacie SVG.
+
+\subsection{Funkcja \texttt{generateUniquePoints}}
+
+\begin{itemize}
+    \item \textbf{Nagłówek:}
+    \begin{verbatim}
+std::vector<Point> generateUniquePoints(int num_of_points)
+    \end{verbatim}
+    
+    \item \textbf{Opis:} 
+    Funkcja generuje zadany liczbowo zbiór unikalnych punktów w przestrzeni dwuwymiarowej. Każdy punkt reprezentowany jest przez strukturę \texttt{Point}, zawierającą współrzędne $x$ i $y$.
+
+    \item \textbf{Parametry:}
+    \begin{itemize}
+        \item \texttt{num\_of\_points} – liczba punktów do wygenerowania.
+    \end{itemize}
+
+    \item \textbf{Zwraca:}
+    Wektor \texttt{std::vector<Point>} zawierający wygenerowane punkty.
+
+    \item \textbf{Zastosowanie:}
+    Stanowi etap inicjalizacji danych wejściowych do dalszych operacji geometrycznych.
+\end{itemize}
+
+\subsection{Funkcja \texttt{computeTriangulationAndEdges}}
+
+\begin{itemize}
+    \item \textbf{Nagłówek:}
+    \begin{verbatim}
+std::pair<std::vector<std::array<int, 3>>, std::vector<Edge>>
+computeTriangulationAndEdges(const std::vector<Point>& vertices)
+    \end{verbatim}
+
+    \item \textbf{Opis:}
+    Funkcja przetwarza zbiór punktów 2D i generuje siatkę trójkątów (np. Delaunaya) wraz z unikalnym zestawem krawędzi. Indeksy w trójkątach odnoszą się do pozycji w wektorze \texttt{vertices}.
+
+    \item \textbf{Parametry:}
+    \begin{itemize}
+        \item \texttt{vertices} – zbiór punktów wejściowych (wierzchołków grafu).
+    \end{itemize}
+
+    \item \textbf{Zwraca:}
+    \begin{itemize}
+        \item \texttt{std::vector<std::array<int, 3>>} – lista trójkątów jako indeksy wierzchołków,
+        \item \texttt{std::vector<Edge>} – unikalne krawędzie grafu.
+    \end{itemize}
+
+    \item \textbf{Zastosowanie:}
+    Stanowi warstwę obliczeniową odpowiedzialną za topologię grafu.
+\end{itemize}
+
+\subsection{Funkcja \texttt{drawSVG}}
+
+\begin{itemize}
+    \item \textbf{Nagłówek:}
+    \begin{verbatim}
+void drawSVG(const std::vector<Point>& points,
+    const std::vector<std::vector<std::pair<int, int>>>& all_routes_edges,
+    const std::vector<std::array<int, 3>>& triangles,
+    const std::string& filename)
+    \end{verbatim}
+
+    \item \textbf{Opis:}
+    Funkcja odpowiedzialna za wygenerowanie graficznej reprezentacji w formacie SVG. Uwzględnia punkty, krawędzie i trójkąty. Może również wizualizować wiele tras (np. z algorytmów optymalizacyjnych).
+
+    \item \textbf{Parametry:}
+    \begin{itemize}
+        \item \texttt{points} – lista punktów (wierzchołków),
+        \item \texttt{all\_routes\_edges} – zagnieżdżony wektor krawędzi tras,
+        \item \texttt{triangles} – lista trójkątów (indeksy do punktów),
+        \item \texttt{filename} – ścieżka i nazwa pliku wynikowego SVG.
+    \end{itemize}
+
+    \item \textbf{Zwraca:}
+    Brak wartości zwrotnej; funkcja zapisuje plik SVG do systemu plików.
+
+    \item \textbf{Zastosowanie:}
+    Umożliwia tworzenie dokumentacji graficznej oraz weryfikację wyników obliczeń geometrycznych.
+\end{itemize}
+
+
 \section{Wyniki}
 
 W celu przetestowania poprawności działania i jakości generowanych tras, przeprowadzono eksperyment na instancji obejmującej 50 wierzchołków, z czego:
@@ -154,6 +238,7 @@ W celu przetestowania poprawności działania i jakości generowanych tras, prze
     \item wierzchołek \textbf{49} był celem (meta),
     \item \textbf{48 pozostałych punktów} stanowiło zbiór klientów (waypoints).
 \end{itemize}
+
 
 \subsection*{Wygenerowane trasy}
 
@@ -326,7 +411,7 @@ Dla każdej z wyznaczonych tras wygenerowano wizualizacje w formacie SVG. Kolory
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{277F47CA-3920-4B86-AFE1-1EB9FF95EBFC.png}
-    \caption{Wizualizacja rozwiązania bez oznaczenia tras}
+    \caption{Wizualizacja grafu}
     \label{fig:enter-label}
 \end{figure}
 
