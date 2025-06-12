@@ -5,10 +5,9 @@
 #include "common/types.h"
 #include <CDT.h>
 
-int main()
+std::pair<std::vector<std::array<int, 3>>, std::vector<Edge>>
+computeTriangulationAndEdges(const std::vector<Point>& vertices)
 {
-    std::vector<Point> vertices = generateUniquePoints(50);
-
     std::vector<CDT::V2d<double>> cdt_points;
     for (const auto& p : vertices)
         cdt_points.emplace_back(p.x, p.y);
@@ -37,14 +36,22 @@ int main()
     for (const auto& tri : cdt.triangles) {
         std::array<int, 3> triangle = { tri.vertices[0], tri.vertices[1], tri.vertices[2] };
         triangles.push_back(triangle);
-
-
     }
 
-    auto outputEdges = solveProblem(vertices, edges, 20);
-	std::vector<std::vector<std::pair<int, int>>> clearGraph;
+    return { triangles, edges };
+}
 
-// Pętla do rysowania każdej trasy w osobnym pliku
+
+int main()
+{
+    std::vector<Point> vertices = generateUniquePoints(50);
+
+    auto [triangles, edges] = computeTriangulationAndEdges(vertices);
+
+    auto outputEdges = solveProblem(vertices, edges, 20);
+    std::vector<std::vector<std::pair<int, int>>> clearGraph;
+
+    // Pętla do rysowania każdej trasy w osobnym pliku
     for (int i = 0; i < outputEdges.size(); ++i) {
         // Stwórz dynamiczną nazwę pliku, np. "graph_with_route_0.svg", "graph_with_route_1.svg" itd.
         std::string filename = "graph_with_route_" + std::to_string(i) + ".svg";
