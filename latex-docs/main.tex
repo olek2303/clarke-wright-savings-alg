@@ -95,25 +95,18 @@ Projekt składa się z trzech głównych komponentów:
 
 \subsection*{Opis komponentów}
 
-\paragraph{Algorytm}
-
-Poniższe pliki zawierają implementację heurystycznego podejścia Clarke’a-Wrighta:
-\begin{itemize}
-    \item \texttt{clarke\_wright\_separate\_depots()} -- podstawowy algorytm łączący trasy klientów w oparciu o listę oszczędności,
-    \item \texttt{generate\_routes\_with\_variants()} -- rozszerzenie algorytmu o możliwość tworzenia wielu wariantów przez losowe permutacje listy oszczędności,
-    \item \texttt{calculate\_route\_distance\_separate\_depots()} -- obliczanie długości trasy z uwzględnieniem osobnych magazynów początkowego i końcowego.
-\end{itemize}
-
 \paragraph{Solver: \texttt{solver.cpp}}
 
-Główna część odpowiedzialna za wykonanie heurystyki i przygotowanie tras:
+Moduł odpowiedzialny za wyznaczanie wielu alternatywnych tras pomiędzy punktami startowym a końcowym, z wykorzystaniem m.in. algorytmu Clarke’a-Wrighta oraz podejścia bazującego na Dijkstrze. Główne funkcjonalności:
 \begin{itemize}
-    \item inicjalizuje dane wejściowe i macierz odległości przy użyciu algorytmu Dijkstry,
-    \item generuje listę klientów i uruchamia algorytm Clarke’a-Wrighta z wariantami,
-    \item wybiera najlepsze trasy (sortując po długości i liczbie punktów),
-    \item rekonstruuje pełne ścieżki przy użyciu macierzy rodziców,
-    \item eksportuje wynikowe krawędzie do dalszej wizualizacji.
+    \item implementacja algorytmu oszczędności Clarke’a-Wrighta do łączenia tras początkowych na podstawie oszczędności dystansu,
+    \item losowe modyfikacje wag krawędzi (szum) oraz penalizacja już wykorzystanych węzłów w celu zwiększenia różnorodności tras,
+    \item porównywanie tras przy użyciu współczynnika podobieństwa Jaccarda i odrzucanie zbyt podobnych wyników,
+    \item alternatywne wyznaczanie ścieżek przy użyciu algorytmu Dijkstry na zmodyfikowanym grafie z kosztami zależnymi od „omijanych” węzłów,
+    \item stopniowe generowanie wielu tras z mechanizmami resetowania używanych węzłów, by uniknąć zablokowania procesu,
+    \item końcowa filtracja i wybór najlepszych tras oraz ich długości, wypisywanych na wyjściu.
 \end{itemize}
+
 
 \paragraph{Wizualizacja: \texttt{visualisation.cpp}}
 
@@ -325,41 +318,13 @@ W celu przetestowania poprawności działania i jakości generowanych tras, prze
 \end{enumerate}
 
 
-\subsection*{Najlepsze trasy}
-
-\begin{enumerate}
-    \item \textbf{Trasa \#1:}\\
-    0 → 2 → 5 → 16 → 17 → 18 → 19 → 21 → 23 → 27 → 38 → 42 → 49\\
-    \textbf{Długość:} 60{,}10
-
-    \item \textbf{Trasa \#2:}\\
-    0 → 9 → 12 → 15 → 25 → 33 → 46 → 49\\
-    \textbf{Długość:} 49{,}47
-
-    \item \textbf{Trasa \#3:}\\
-    0 → 7 → 17 → 27 → 36 → 46 → 49\\
-    \textbf{Długość:} 47{,}84
-
-    \item \textbf{Trasa \#4:}\\
-    0 → 7 → 8 → 11 → 18 → 19 → 21 → 25 → 33 → 36 → 38 → 42 → 49\\
-    \textbf{Długość:} 48{,}80
-
-    \item \textbf{Trasa \#5:}\\
-    0 → 1 → 9 → 12 → 14 → 15 → 21 → 23 → 27 → 38 → 42 → 49\\
-    \textbf{Długość:} 52{,}10
-
-    \item \textbf{Trasa \#6:}\\
-    0 → 1 → 9 → 12 → 14 → 15 → 25 → 33 → 36 → 46 → 49\\
-    \textbf{Długość:} 54{,}00
-\end{enumerate}
-
 \subsection*{Wizualizacja tras}
 
 Dla każdej z wyznaczonych tras wygenerowano wizualizacje w formacie SVG. Kolory tras pozwalają na łatwe ich rozróżnienie.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{model.png}
+    \includegraphics[width=1\linewidth]{clear.png}
     \caption{Wizualizacja grafu}
     \label{fig:enter-label}
 \end{figure}
@@ -520,7 +485,7 @@ Dla każdej z wyznaczonych tras wygenerowano wizualizacje w formacie SVG. Kolory
 
 \subsection*{Uwagi końcowe}
 
-Eksperyment potwierdził, że heurystyka Clarke’a-Wrighta potrafi wyznaczyć dobre jakościowo trasy, nawet w przypadku niestandardowego modelu z osobnym punktem startu i mety. Różnice w długości pomiędzy najlepszymi trasami wynikały z losowych permutacji listy oszczędności, co pokazuje elastyczność algorytmu.
+Eksperyment potwierdził, że zmodyfikowana heurystyka Clarke’a-Wrighta, urozmaicona o elementy losowości, potrafi wyznaczyć trasy pokrywające część punktów, nie powatrzając przy tym wykorzytsanych już raz krawędzi, nawet w przypadku niestandardowego modelu z osobnym punktem startu i mety.
 \section{Podsumowanie}
 
 Celem projektu było zaimplementowanie oraz przetestowanie heurystycznego rozwiązania problemu trasowania pojazdów (VRP) z oddzielnym punktem startu i końcowego powrotu. W tym celu wykorzystano zmodyfikowaną wersję algorytmu Clarke’a-Wrighta, który pozwala na skuteczne wyznaczanie tras w sposób szybki i skalowalny.
@@ -529,10 +494,10 @@ Na podstawie zebranych wyników oraz przeprowadzonych eksperymentów można sfor
 
 \begin{itemize}
     \item Algorytm oszczędnościowy okazał się skutecznym narzędziem do szybkiego generowania tras nawet w dużej instancji problemu (48 klientów).
-    \item Dzięki implementacji wariantów z losową permutacją listy oszczędności, możliwe było znalezienie tras lepszych niż w podejściu deterministycznym.
+    \item Dzięki implementacji wariantów z losową permutacją listy oszczędności oraz dodanym szumem, możliwe było znalezienie tras lepszych niż w podejściu deterministycznym.
     \item Struktura rozwiązania została zaprojektowana w sposób modularny, co umożliwia łatwą rozbudowę – zarówno pod kątem integracji z dokładnym solverem (np. CPLEX), jak i zastosowania innych heurystyk.
     \item Zastosowanie triangulacji i eksportu do formatu SVG umożliwiło przejrzystą wizualizację wyników, co znacznie ułatwia interpretację tras.
-    \item Najlepsza trasa osiągnęła łączny koszt równy 221{,}302, przy pełnym pokryciu zbioru klientów – co jest wynikiem bardzo konkurencyjnym jak na rozwiązanie heurystyczne.
+    \item Najlepsza trasa pokryła 15 z 48 punktów.
 \end{itemize}
 
 W kolejnych etapach projekt może zostać rozszerzony o:
