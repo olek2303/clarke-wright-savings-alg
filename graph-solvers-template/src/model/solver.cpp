@@ -10,175 +10,399 @@
 #include <cmath>
 #include <stdexcept>
 #include <thread>
-#include "model/clark_wright_alg.h"
 #include <queue>
+#include <iomanip>
 
-void dijkstra(int source, const std::vector<std::vector<std::pair<int, double>>>& adj,
-              std::vector<double>& dist, std::vector<int>& parent) {
-    int n = (int)adj.size();
-    dist.assign(n, std::numeric_limits<double>::infinity());
-    parent.assign(n, -1);
-    dist[source] = 0.0;
+#include <unordered_map>
 
-    using PD = std::pair<double, int>;
-    std::priority_queue<PD, std::vector<PD>, std::greater<PD>> pq;
-    pq.emplace(0.0, source);
+// Funkcja do obliczania podobieństwa między trasami (Jaccard similarity)
+double routeSimilarity(const std::vector<std::pair<int, int>>& route1,
+    const std::vector<std::pair<int, int>>& route2) {
+    std::set<std::pair<int, int>> edges1(route1.begin(), route1.end());
+    std::set<std::pair<int, int>> edges2(route2.begin(), route2.end());
+
+    std::set<std::pair<int, int>> intersection;
+    std::set_intersection(edges1.begin(), edges1.end(),
+        edges2.begin(), edges2.end(),
+        std::inserter(intersection, intersection.begin()));
+
+    std::set<std::pair<int, int>> union_set;
+    std::set_union(edges1.begin(), edges1.end(),
+        edges2.begin(), edges2.end(),
+        std::inserter(union_set, union_set.begin()));
+
+    if (union_set.empty()) return 0.0;
+    return static_cast<double>(intersection.size()) / union_set.size();
+}
+
+// Funkcja do sprawdzenia czy trasa jest wystarczająco różna od istniejących
+bool isRouteDifferent(const std::vector<std::pair<int, int>>& newRoute,
+    const std::vector<std::vector<std::pair<int, int>>>& existingRoutes,
+    double minDifferenceThreshold = 0.3) {
+    for (const auto& existingRoute : existingRoutes) {
+        if (routeSimilarity(newRoute, existingRoute) > (1.0 - minDifferenceThreshold)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Funkcja do znajdowania alternatywnej trasy używając k-shortest paths
+std::vector<std::pair<int, int>> findAlternativePath(
+    const std::vector<Point>& vertices,
+    const std::vector<Edge>& edges,
+    const std::set<int>& avoidNodes,
+    double costMultiplier = 1.0) {
+
+    int start = 0;
+    int end = (int)vertices.size() - 1;
+
+    // Buduj graf z modyfikowanymi kosztami
+    std::unordered_map<int, std::vector<std::pair<int, double>>> adj;
+    std::set<std::pair<int, int>> edge_set;
+
+    for (const auto& edge : edges) {
+        if (avoidNodes.count(edge.u) || avoidNodes.count(edge.v)) continue;
+
+        double modifiedCost = edge.cost;
+        // Zwiększ koszt krawędzi prowadzących do unikanych węzłów
+        if (avoidNodes.count(edge.u) || avoidNodes.count(edge.v)) {
+            modifiedCost *= costMultiplier;
+        }
+
+        adj[edge.u].emplace_back(edge.v, modifiedCost);
+        adj[edge.v].emplace_back(edge.u, modifiedCost);
+        edge_set.insert({ edge.u, edge.v });
+        edge_set.insert({ edge.v, edge.u });
+    }
+
+    // Dijkstra do znajdowania najkrótszej ścieżki
+    std::vector<double> dist(vertices.size(), std::numeric_limits<double>::infinity());
+    std::vector<int> parent(vertices.size(), -1);
+    std::priority_queue<std::pair<double, int>,
+        std::vector<std::pair<double, int>>,
+        std::greater<std::pair<double, int>>> pq;
+
+    dist[start] = 0;
+    pq.push({ 0, start });
 
     while (!pq.empty()) {
-        auto [curr_dist, u] = pq.top();
+        auto [d, u] = pq.top();
         pq.pop();
-        if (curr_dist > dist[u]) continue;
 
-        for (const auto& [v, cost] : adj[u]) {
-            double nd = curr_dist + cost;
-            if (nd < dist[v]) {
-                dist[v] = nd;
+        if (d > dist[u]) continue;
+
+        for (auto [v, cost] : adj[u]) {
+            if (dist[u] + cost < dist[v]) {
+                dist[v] = dist[u] + cost;
                 parent[v] = u;
-                pq.emplace(nd, v);
+                pq.push({ dist[v], v });
             }
         }
     }
-}
 
-std::vector<int> reconstruct_path(int from, int to, const std::vector<std::vector<int>>& parent_matrix) {
-    std::vector<int> path;
-    if (parent_matrix[from][to] == -1 && from != to) {
-        return {};
+    // Rekonstruuj ścieżkę
+    std::vector<std::pair<int, int>> path;
+    if (dist[end] == std::numeric_limits<double>::infinity()) {
+        return path; // Brak ścieżki
     }
-    int current = to;
-    while (current != from) {
-        path.push_back(current);
-        current = parent_matrix[from][current];
-        if (current == -1) return {};
+
+    int current = end;
+    while (parent[current] != -1) {
+        path.push_back({ parent[current], current });
+        current = parent[current];
     }
-    path.push_back(from);
+
     std::reverse(path.begin(), path.end());
     return path;
 }
 
+std::vector<std::vector<std::pair<int, int>>> solveProblem(
+    const std::vector<Point>& vertices,
+    const std::vector<Edge>& edges,
+    int n_of_roads) {
 
-std::vector<std::vector<std::pair<int, int>>> solveProblem(const std::vector<Point>& vertices, const std::vector<Edge>& edges, int n_of_roads)
-{
-    std::cout << "Solving with Clarke-Wright based heuristic...\n";
-    std::vector<std::vector<std::pair<int, int>>> all_output_edges;
+    int start = 0;
+    int end = (int)vertices.size() - 1;
 
-    IloEnv env;
+    // === Adjacency and Edge set for validation ===
+    std::unordered_map<int, std::vector<std::pair<int, double>>> adj;
+    std::set<std::pair<int, int>> edge_set;
+    for (const auto& edge : edges) {
+        adj[edge.u].emplace_back(edge.v, edge.cost);
+        adj[edge.v].emplace_back(edge.u, edge.cost);
+        edge_set.insert({ edge.u, edge.v });
+        edge_set.insert({ edge.v, edge.u });
+    }
 
-    try {
-        int num_points = static_cast<int>(vertices.size());
-        if (num_points < 3) {
-            std::cerr << "You need to have at least 3 points!.\n";
-            return {};
+    // === Initial routes ===
+    std::unordered_map<int, int> nodeToRoute;
+    std::vector<std::vector<int>> routes;
+    for (int i = 0; i < (int)vertices.size(); ++i) {
+        if (i == start || i == end) continue;
+        routes.push_back({ start, i, end });
+        nodeToRoute[i] = (int)routes.size() - 1;
+    }
+
+    // === Compute Savings ===
+    struct Saving {
+        int i, j;
+        double value;
+    };
+    std::vector<Saving> savings;
+    for (const auto& edge : edges) {
+        int i = edge.u;
+        int j = edge.v;
+        if (i == start || j == start || i == end || j == end) continue;
+
+        const auto& p0 = vertices[start];
+        const auto& pi = vertices[i];
+        const auto& pj = vertices[j];
+
+        double c0i = std::hypot(p0.x - pi.x, p0.y - pi.y);
+        double c0j = std::hypot(p0.x - pj.x, p0.y - pj.y);
+
+        savings.push_back({ i, j, c0i + c0j - edge.cost });
+    }
+
+    std::sort(savings.begin(), savings.end(), [](const Saving& a, const Saving& b) {
+        return a.value > b.value;
+        });
+
+    // === Route merging ===
+    for (const auto& s : savings) {
+        if (nodeToRoute.count(s.i) == 0 || nodeToRoute.count(s.j) == 0) continue;
+        int ri = nodeToRoute[s.i];
+        int rj = nodeToRoute[s.j];
+        if (ri == rj || routes[ri].empty() || routes[rj].empty()) continue;
+
+        auto& route_i = routes[ri];
+        auto& route_j = routes[rj];
+
+        // Merge if i at end-1 of route_i and j at 1 of route_j
+        int back_i = route_i[route_i.size() - 2];
+        int front_j = route_j[1];
+
+        if (back_i == s.i && front_j == s.j &&
+            edge_set.count({ s.i, s.j })) {
+
+            // valid merge
+            route_i.pop_back(); // remove end
+            route_j.erase(route_j.begin()); // remove start
+            route_i.insert(route_i.end(), route_j.begin(), route_j.end());
+
+            for (int k = 1; k < (int)route_j.size() - 1; ++k) {
+                nodeToRoute[route_j[k]] = ri;
+            }
+
+            route_j.clear();
+        }
+    }
+
+    // === Include all non-empty routes ===
+    std::vector<std::vector<int>> candidates;
+    for (const auto& route : routes) {
+        if (!route.empty() && route.front() == start && route.back() == end) {
+            candidates.push_back(route);
+        }
+    }
+
+    // Sort by number of interior points (more = better)
+    std::sort(candidates.begin(), candidates.end(), [](const auto& a, const auto& b) {
+        return a.size() > b.size();
+        });
+
+    // Take top N and convert to edge pairs
+    std::vector<std::vector<std::pair<int, int>>> finalRoutes;
+    for (int i = 0; i < (int)candidates.size(); ++i) {
+        const auto& route = candidates[i];
+        bool valid = true;
+
+        // Must start and end at correct nodes
+        if (route.front() != start || route.back() != end) {
+            continue;
         }
 
-        const int start_depot_idx = 0;
-        const int end_depot_idx = num_points - 1;
-        const int num_waypoints = num_points - 2;
-
-        std::cout << "Start depot idx: " << start_depot_idx << "\n";
-        std::cout << "End depot idx: " << end_depot_idx << "\n";
-        std::cout << "Number of waypoints: " << num_waypoints << "\n";
-
-        std::vector<std::vector<std::pair<int, double>>> adj(num_points);
-        for (const auto& edge : edges) {
-            adj[edge.u].emplace_back(edge.v, edge.cost);
-            adj[edge.v].emplace_back(edge.u, edge.cost);
+        std::vector<std::pair<int, int>> path;
+        for (size_t j = 0; j + 1 < route.size(); ++j) {
+            int u = route[j];
+            int v = route[j + 1];
+            if (edge_set.count({ u, v }) == 0) {
+                valid = false;
+                break;
+            }
+            path.emplace_back(u, v);
         }
 
-        std::vector<std::vector<double>> dist_matrix(num_points, std::vector<double>(num_points, std::numeric_limits<double>::infinity()));
-        std::vector<std::vector<int>> parent_matrix(num_points, std::vector<int>(num_points, -1));
-
-        for (int i = 0; i < num_points; ++i) {
-            std::vector<double> dist;
-            std::vector<int> parent;
-            dijkstra(i, adj, dist, parent);
-            dist_matrix[i] = dist;
-            parent_matrix[i] = parent;
+        if (valid) {
+            finalRoutes.push_back(path);
         }
 
-        std::vector<CustomerNode> nodes;
-        for (int i = 1; i <= num_waypoints; ++i) {
-            nodes.push_back({ i, 1.0 });
+        if ((int)finalRoutes.size() >= n_of_roads) break;
+    }
+
+    return finalRoutes;
+}
+
+std::vector<std::vector<std::pair<int, int>>> solveMultipleRoutes(
+    const std::vector<Point>& vertices,
+    const std::vector<Edge>& edges,
+    int n_of_roads) {
+
+    std::vector<std::vector<std::pair<int, int>>> allRoutes;
+    std::set<int> usedNodes; // Węzły używane w już znalezionych trasach
+
+    std::default_random_engine rng(std::random_device{}());
+    std::uniform_real_distribution<double> noiseDist(0.8, 1.2); // Szum multiplikatywny
+    std::uniform_real_distribution<double> avoidDist(2.0, 5.0); // Mnożnik dla unikanych węzłów
+
+    int maxAttempts = n_of_roads * 50;
+    int attempts = 0;
+
+    while ((int)allRoutes.size() < n_of_roads && attempts < maxAttempts) {
+        ++attempts;
+
+        // Strategia 1: Znajdź trasę używając Clark-Wright z szumem
+        std::vector<Edge> noisyEdges;
+        for (const auto& e : edges) {
+            double noisyMultiplier = noiseDist(rng);
+            // Zwiększ koszt krawędzi prowadzących do już używanych węzłów
+            if (usedNodes.count(e.u) || usedNodes.count(e.v)) {
+                noisyMultiplier *= avoidDist(rng);
+            }
+            noisyEdges.push_back({ e.u, e.v, e.cost * noisyMultiplier });
         }
 
-        std::vector<Route> routes = generate_routes_with_variants(
-                start_depot_idx, end_depot_idx, nodes, dist_matrix, num_waypoints * 10);
+        auto cwRoutes = solveProblem(vertices, noisyEdges, 1);
 
-        if (routes.empty()) {
-            std::cerr << "No routes found!.\n";
-            return {};
+        // Strategia 2: Jeśli Clark-Wright nie dał dobrej trasy, użyj alternatywnej metody
+        std::vector<std::pair<int, int>> newRoute;
+        if (!cwRoutes.empty()) {
+            newRoute = cwRoutes[0];
+        }
+        else {
+            // Spróbuj znaleźć alternatywną ścieżkę
+            newRoute = findAlternativePath(vertices, edges, usedNodes, avoidDist(rng));
         }
 
+        if (newRoute.empty()) continue;
 
-        std::vector<Route> sorted_routes = routes;
-        std::sort(sorted_routes.begin(), sorted_routes.end(),
-                  [](const Route& a, const Route& b) {
-                      if (a.point_indices.size() != b.point_indices.size()) {
-                          return a.point_indices.size() > b.point_indices.size();
-                      }
-                      else {
-                          return a.total_distance < b.total_distance;
-                      }
-                  });
-
-
-        int top_k = n_of_roads;
-        int count = std::min(top_k, (int)sorted_routes.size());
-
-        for (int i = 0; i < count; ++i) {
-            const Route& best_route = sorted_routes[i];
-            std::vector<std::pair<int, int>> output_edges;
-
-            if (!best_route.point_indices.empty()) {
-                int prev = start_depot_idx;
-                std::cout << "Best route #" << (i + 1) << ": " << prev;
-
-                // Przejście przez wszystkie punkty trasy
-                for (int curr : best_route.point_indices) {
-                    std::vector<int> path = reconstruct_path(prev, curr, parent_matrix);
-                    if (path.empty()) {
-                        std::cerr << "No path between: " << prev << " and " << curr << "\n";
-                        continue;
+        // Sprawdź czy trasa jest wystarczająco różna
+        if (!isRouteDifferent(newRoute, allRoutes, 0.4)) {
+            // Jeśli za podobna, spróbuj z większym unikaniem używanych węzłów
+            if (attempts % 10 == 0) {
+                std::set<int> stronglyAvoidedNodes;
+                for (const auto& route : allRoutes) {
+                    for (const auto& edge : route) {
+                        if (edge.first != 0 && edge.first != (int)vertices.size() - 1) {
+                            stronglyAvoidedNodes.insert(edge.first);
+                        }
+                        if (edge.second != 0 && edge.second != (int)vertices.size() - 1) {
+                            stronglyAvoidedNodes.insert(edge.second);
+                        }
                     }
-
-                    // Dodaj do wypisywania i output_edges (z pominięciem duplikatu prev)
-                    for (size_t j = 1; j < path.size(); ++j) {
-                        std::cout << " -> " << path[j];
-                        output_edges.emplace_back(path[j - 1], path[j]);
-                    }
-                    prev = curr;
                 }
+                newRoute = findAlternativePath(vertices, edges, stronglyAvoidedNodes, 10.0);
 
-                // Na koniec ścieżka do końcowego punktu (end depot)
-                std::vector<int> path = reconstruct_path(prev, end_depot_idx, parent_matrix);
-                if (path.empty()) {
-                    std::cerr << "No path between: " << prev << " and " << end_depot_idx << "\n";
+                if (newRoute.empty() || !isRouteDifferent(newRoute, allRoutes, 0.3)) {
+                    continue;
                 }
-                else {
-                    for (size_t j = 1; j < path.size(); ++j) {
-                        std::cout << " -> " << path[j];
-                        output_edges.emplace_back(path[j - 1], path[j]);
-                    }
-                }
-
-                std::cout << "\nTotal distance of best route #" << (i + 1) << ": " << best_route.total_distance << "\n";
-
-                all_output_edges.push_back(std::move(output_edges));
+            }
+            else {
+                continue;
             }
         }
 
+        allRoutes.push_back(newRoute);
 
-    }
-    catch (const IloException& e) {
-        std::cerr << "CPLEX exception: " << e.getMessage() << std::endl;
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Standard exception: " << e.what() << std::endl;
-    }
-    catch (...) {
-        std::cerr << "Unknown exception occurred.\n";
+        // Aktualizuj zestaw używanych węzłów
+        for (const auto& edge : newRoute) {
+            if (edge.first != 0 && edge.first != (int)vertices.size() - 1) {
+                usedNodes.insert(edge.first);
+            }
+            if (edge.second != 0 && edge.second != (int)vertices.size() - 1) {
+                usedNodes.insert(edge.second);
+            }
+        }
+
+        // Co jakiś czas resetuj część używanych węzłów, żeby nie zablokować wszystkich możliwości
+        if (attempts % 20 == 0 && usedNodes.size() > vertices.size() / 3) {
+            std::vector<int> nodesToRemove(usedNodes.begin(), usedNodes.end());
+            std::shuffle(nodesToRemove.begin(), nodesToRemove.end(), rng);
+            // Usuń połowę używanych węzłów
+            for (size_t i = 0; i < nodesToRemove.size() / 2; ++i) {
+                usedNodes.erase(nodesToRemove[i]);
+            }
+        }
     }
 
-    env.end();
-    return all_output_edges;
+    // Jeśli nadal za mało tras, spróbuj z mniej restrykcyjnymi kryteriami
+    if ((int)allRoutes.size() < n_of_roads) {
+        int remainingRoutes = n_of_roads - (int)allRoutes.size();
+        for (int i = 0; i < remainingRoutes && i < maxAttempts; ++i) {
+            std::vector<Edge> veryNoisyEdges;
+            for (const auto& e : edges) {
+                double multiplier = noiseDist(rng) * noiseDist(rng); // Więcej szumu
+                veryNoisyEdges.push_back({ e.u, e.v, e.cost * multiplier });
+            }
+
+            auto routes = solveProblem(vertices, veryNoisyEdges, 1);
+            if (!routes.empty() && isRouteDifferent(routes[0], allRoutes, 0.2)) {
+                allRoutes.push_back(routes[0]);
+            }
+        }
+    }
+
+    // Ostateczne wypełnienie (jeśli naprawdę nic nie działa)
+    while ((int)allRoutes.size() < n_of_roads) {
+        if (!allRoutes.empty()) {
+            // Dodaj zmodyfikowaną wersję pierwszej trasy
+            auto modifiedRoute = allRoutes[0];
+            if (modifiedRoute.size() > 2) {
+                // Usuń jeden węzeł środkowy
+                modifiedRoute.erase(modifiedRoute.begin() + 1);
+            }
+            allRoutes.push_back(modifiedRoute);
+        }
+        else {
+            break;
+        }
+    }
+
+    // === Wypisywanie znalezionych tras ===
+    std::cout << "\n=== ZNALEZIONE TRASY ===" << std::endl;
+    for (int i = 0; i < (int)allRoutes.size(); ++i) {
+        const auto& route = allRoutes[i];
+
+        // Oblicz długość trasy
+        double totalLength = 0.0;
+        std::cout << "Trasa " << (i) << ": ";
+
+        if (!route.empty()) {
+            // Wypisz pierwszy węzeł
+            std::cout << route[0].first;
+
+            // Wypisz kolejne węzły i oblicz długość
+            for (const auto& edge : route) {
+                std::cout << " -> " << edge.second;
+
+                // Znajdź koszt tej krawędzi w oryginalnych danych
+                for (const auto& originalEdge : edges) {
+                    if ((originalEdge.u == edge.first && originalEdge.v == edge.second) ||
+                        (originalEdge.u == edge.second && originalEdge.v == edge.first)) {
+                        totalLength += originalEdge.cost;
+                        break;
+                    }
+                }
+            }
+
+            std::cout << " | Dlugosc: " << std::fixed << std::setprecision(2) << totalLength << std::endl;
+        }
+        else {
+            std::cout << "PUSTA" << std::endl;
+        }
+    }
+    std::cout << "========================\n" << std::endl;
+
+    return allRoutes;
 }
